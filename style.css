@@ -54,7 +54,7 @@ color:black;
         height: 180px;
       }
     }
-.bookmark1 {width: 20px !important; height: 20px !important; margin-right: 8px !important;
+.bookmark, .bookmark1  {width: 20px !important; height: 20px !important; margin-right: 8px !important;
 display: flex!important;padding: 5px;
 }
 

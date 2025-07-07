@@ -1,13 +1,34 @@
 <?php
 $host = 'localhost';
-$db = 'media';
+$db   = 'media';
 $user = 'root';
 $pass = '123456';
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+  die("Connection failed: " . $conn->connect_error);
 }
+
+// ⬇️ כאן בדיוק!
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = 20;
+
+$count_result = $conn->query("SELECT COUNT(*) AS total FROM posters");
+$total_rows   = $count_result->fetch_assoc()['total'];
+$total_pages  = max(1, ceil($total_rows / $limit)); // תמיד לפחות עמוד אחד
+
+if ($page > $total_pages) {
+  $page = $total_pages;
+}
+
+$offset = ($page - 1) * $limit;
+
+// ⬇️ ואז שליפת הפוסטרים:
+$result = $conn->query("SELECT * FROM posters ORDER BY id DESC LIMIT $limit OFFSET $offset");
+
+
+
+
 
 $where = [];
 $params = [];
@@ -63,7 +84,7 @@ if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
 $sql .= " $orderBy";
-
+$sql .= " $orderBy LIMIT $limit OFFSET $offset";
 $stmt = $conn->prepare($sql);
 if ($types) {
     $stmt->bind_param($types, ...$params);
@@ -75,7 +96,9 @@ $rows = [];
 while ($row = $result->fetch_assoc()) {
     $rows[] = $row;
 }
-
+if (!empty($_GET['subtitles'])) {
+    $where[] = "has_subtitles = 1";
+}
 
 ?>
 
@@ -100,6 +123,11 @@ while ($row = $result->fetch_assoc()) {
       <input type="text" name="year" value="<?= htmlspecialchars($_GET['year'] ?? '') ?>">
       📊 דירוג מינימלי:
       <input type="text" name="min_rating" value="<?= htmlspecialchars($_GET['min_rating'] ?? '') ?>">
+
+      <label>📝 יש כתוביות:</label>
+<input type="checkbox" name="subtitles" value="1" <?= isset($_GET['subtitles']) ? 'checked' : '' ?>>
+
+
       ⬇️ מיון לפי:
 <select name="type">
   <option value="">הכל</option>
@@ -144,6 +172,7 @@ while ($row = $result->fetch_assoc()) {
     <!-- תמונה -->
     <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['title_en']) ?>">
 
+    
     <!-- כותרת -->
     <div class="poster-title ltr">
       <b>
@@ -169,12 +198,13 @@ $lang_icons = [
   'es' => '🇪🇸', 'ja' => '🇯🇵', 'de' => '🇩🇪'
 ];
 $lang = $row['lang_code'] ?? '';
-$lang_icon = $lang_icons[$lang] ?? '🌐';
+$lang_icon = $lang_icons[$lang] ?? '';
+/* 🌐 */
 
 // תכונות נוספות
 $features = '';
 if (!empty($row['is_dubbed'])) {
-  $features .= ' <span title="מדובב">🎧</span>';
+  $features .= ' <span title="מדובב"><img src="hebdub.svg" class="bookmark1"></span>';
 }
 if (!empty($row['has_subtitles'])) {
   $features .= ' <span title="כתוביות">📝</span>';
@@ -231,18 +261,29 @@ echo "<div style='font-size:12px; color:#555;'>$icon</div>";
        צפה בסדרה ב־TVDB
     </a>
   </div>
+
+  
 <?php endif; ?>
 
 </div>  </div>
 
 
-
-
 <?php endforeach; ?>
+
 
 
     <?php endif; ?>
   </div>
+
+  
+  <div style="text-align:center;">
+  <?php if ($page > 1): ?>
+    <a href="index.php?page=<?= $page - 1 ?>">⬅ הקודם</a>
+  <?php endif; ?>
+  <a href="index.php?page=<?= $page + 1 ?>">הבא ➡</a>
+</div>
+<p style="text-align:center;">עמוד <?= $page ?> מתוך <?= $total_pages ?></p>
+
 </body>
 </html>
 <?php

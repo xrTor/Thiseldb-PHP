@@ -14,27 +14,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
     && !isset($_POST['add_category']) 
     && !isset($_POST['delete_category'])) {
 
-    $title_en    = $_POST['title_en'] ?? '';
-    $title_he    = $_POST['title_he'] ?? '';
-    $year        = $_POST['year'] ?? '';
-    $imdb_rating = $_POST['imdb_rating'] ?? '';
-    $imdb_link   = $_POST['imdb_link'] ?? '';
-    $image_url   = $_POST['image_url'] ?? '';
-    $plot        = $_POST['plot'] ?? '';
-    $type        = $_POST['type'] ?? 'movie';
-    $tvdb_id     = $_POST['tvdb_id'] ?? '';
+    $title_en         = $_POST['title_en'] ?? '';
+    $title_he         = $_POST['title_he'] ?? '';
+    $year             = $_POST['year'] ?? '';
+    $imdb_rating      = $_POST['imdb_rating'] ?? '';
+    $imdb_link        = $_POST['imdb_link'] ?? '';
+    $image_url        = $_POST['image_url'] ?? '';
+    $plot             = $_POST['plot'] ?? '';
+    $type             = $_POST['type'] ?? 'movie';
+    $tvdb_id          = $_POST['tvdb_id'] ?? '';
+    $genre            = $_POST['genre'] ?? '';
+    $actors           = $_POST['actors'] ?? '';
+    $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
 
-    $stmt = $conn->prepare("INSERT INTO posters 
-    (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $conn->prepare("INSERT INTO posters 
+(title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    $stmt->bind_param("sssssssss", $title_en, $title_he, $year, $imdb_rating,
-        $imdb_link, $image_url, $plot, $type, $tvdb_id);
-    $stmt->execute();
+
+// ✨ הגדרה מוקדמת לפני bind_param
+$has_subtitles = isset($_POST['has_subtitles']) ? 1 : 0;
+$is_dubbed     = isset($_POST['is_dubbed'])     ? 1 : 0;
+
+$stmt->bind_param("sssssssssssiiis",
+  $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
+  $type, $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code);
+
+        $stmt->execute(); // ✅ זו השורה שהייתה חסרה!
     $poster_id = $conn->insert_id;
     $stmt->close();
 
-    // 🏷️ תגיות
+    // 🏷️ שמירת תגיות
     if (!empty($_POST['categories'])) {
         foreach ($_POST['categories'] as $cat_id) {
             $stmt = $conn->prepare("INSERT INTO poster_categories (poster_id, category_id) VALUES (?, ?)");
@@ -53,6 +63,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
     }
 }
 
+
+?>
+<?php
 // ➕ הוספת תגית
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category']) && !empty($_POST['new_category'])) {
     $name = trim($_POST['new_category']);
@@ -68,6 +81,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && 
     $conn->query("DELETE FROM poster_categories WHERE category_id = $id");
     $conn->query("DELETE FROM categories WHERE id = $id");
 }
+
+$genre           = $_POST['genre'] ?? '';
+$actors          = $_POST['actors'] ?? '';
+$youtube_trailer = $_POST['youtube_trailer'] ?? '';
+
+$is_dubbed = isset($_POST['is_dubbed']) ? 1 : 0;
+
+$lang_code = $_POST['lang_code'] ?? '';
+
 ?>
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -75,38 +97,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && 
   <meta charset="UTF-8">
   <title>הוספת פוסטר</title>
   <link rel="stylesheet" href="style.css">
-  <script>
-    function fetchFromIMDb() {
-      const url = document.getElementById('imdbUrl').value;
-      const match = url.match(/tt\d+/);
-      if (!match) {
-        alert("לא נמצא מזהה IMDb תקף");
-        return;
+  
+ <script>
+function fetchFromIMDb() {
+  const url = document.getElementById('imdbUrl').value.trim();
+  const match = url.match(/tt\d+/);
+  if (!match) return;
+
+  const imdbId = match[0];
+  const apiKey = '1ae9a12e'; // החלף למפתח תקף אם צריך
+
+  fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.Response === "True") {
+        document.getElementById('title_en').value = data.Title || '';
+        document.getElementById('year').value = data.Year || '';
+        document.getElementById('imdb_rating').value = data.imdbRating || '';
+        document.getElementById('image_url').value = data.Poster || '';
+        document.getElementById('plot').value = data.Plot || '';
+        document.getElementById('imdb_link').value = `https://www.imdb.com/title/${imdbId}/`;
+document.getElementById('genre').value = data.Genre || '';
+document.getElementById('actors').value = data.Actors || '';
+
+
+
+        // תצוגה חיה
+        const image = document.getElementById('previewImage');
+        const plot = document.getElementById('previewPlot');
+
+        if (data.Poster) {
+          image.src = data.Poster;
+          image.style.display = 'block';
+        } else {
+          image.style.display = 'none';
+        }
+
+        plot.textContent = data.Plot || '';
+      } else {
+        alert("לא נמצאו נתונים עבור IMDb ID זה");
       }
-      const imdbId = match[0];
-      const apiKey = '1ae9a12e'; // החלף לפי המפתח שלך
+    })
+    .catch(err => {
+      console.error("שגיאה ב־OMDb API:", err);
+      alert("שגיאה בשליפת נתונים");
+    });
+}
 
-      fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.Response === "True") {
-            document.getElementById('title_en').value = data.Title || '';
-            document.getElementById('year').value = data.Year || '';
-            document.getElementById('imdb_rating').value = data.imdbRating || '';
-            document.getElementById('image_url').value = data.Poster || '';
-            document.getElementById('plot').value = data.Plot || '';
-            document.getElementById('imdb_link').value = `https://www.imdb.com/title/${imdbId}/`;
+// הפעלה אוטומטית
+document.addEventListener("DOMContentLoaded", () => {
+  const imdbField = document.getElementById('imdbUrl');
+  imdbField.addEventListener('change', fetchFromIMDb);
+  imdbField.addEventListener('blur', fetchFromIMDb);
+});
+</script>
 
-          } else {
-            alert("לא נמצאו נתונים עבור IMDb ID זה");
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("שגיאה בשליפת נתונים");
-        });
-    }
-  </script>
+
 </head>
 <body>
   <h2 style="text-align:center;">📥 הוספת פוסטר חדש</h2>
@@ -124,6 +170,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && 
     <input type="text" id="imdbUrl" style="width:100%;"><br>
     <button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button><br><br>
 
+<label>🌐 שפת מקור:</label><br>
+<select name="lang_code">
+  <option value="">לא ידוע</option>
+  <option value="he">🇮🇱 עברית</option>
+  <option value="en">🇬🇧 אנגלית</option>
+  <option value="fr">🇫🇷 צרפתית</option>
+  <option value="ja">🇯🇵 יפנית</option>
+  <option value="de">🇩🇪 גרמנית</option>
+  <option value="es">🇪🇸 ספרדית</option>
+</select><br>
+
 <label>🔗 TVDB ID (לסדרות בלבד):</label><br>
 <input type="text" name="tvdb_id"><br>
 
@@ -137,10 +194,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && 
     <input type="text" id="imdb_rating" name="imdb_rating"><br>
     <label>קישור ל-IMDb:</label><br>
     <input type="text" id="imdb_link" name="imdb_link"><br>
+    <label>🎞️ קישור לטריילר YouTube:</label><br>
+    <input type="text" name="youtube_trailer" placeholder="https://www.youtube.com/watch?v=..."><br>
+   
     <label>🖼️ כתובת תמונה:</label><br>
     <input type="text" id="image_url" name="image_url" required><br>
+
+    <label>📝 יש כתוביות?</label><br>
+<input type="checkbox" name="has_subtitles" value="1"><br>
+
+<label>      <span>
+        <img src="hebdub.svg" class="bookmark">
+    </span> מדובב?</label><br>
+<input type="checkbox" name="is_dubbed" value="1"><br>
+
+
+   
     <label>📘 תקציר:</label><br>
     <textarea id="plot" name="plot" rows="4" cols="50"></textarea><br>
+    <label>🎭 ז'אנר:</label><br>
+<input type="text" id="genre" name="genre"><br>
+
+<label>👥 שחקנים:</label><br>
+<input type="text" id="actors" name="actors"><br>
+
+
+    <div id="preview" style="margin-top:20px; text-align:center;">
+  <img id="previewImage" src="" alt="" style="max-width:250px; display:none; border-radius:6px;"><br>
+  <div id="previewPlot" style="margin-top:10px; font-size:14px; line-height:1.6;"></div>
+</div>
+
 
     <label>🏷️ קטגוריות:</label><br>
     <select name="categories[]" multiple style="width:100%;">
@@ -155,16 +238,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && 
     <button type="submit">💾 שמור</button>
   </form>
 <hr>
-<h4>🔧 ניהול תגיות</h4>
+<h4 align="center">🔧 ניהול תגיות</h4>
 
 <!-- הוספת תגית חדשה -->
-<form method="post" style="margin-bottom:10px;">
+<form method="post" style="margin-bottom:10px;" align="center">
   <input type="text" name="new_category" placeholder="שם תגית חדשה" required>
   <button type="submit" name="add_category">➕ הוסף</button>
 </form>
 
 <!-- מחיקת תגיות קיימות -->
-<ul style="list-style:none; padding:0;">
+<ul style="list-style:none; padding:0;" align="center">
   <?php
   $cat_list = $conn->query("SELECT * FROM categories");
   while ($cat = $cat_list->fetch_assoc()):
