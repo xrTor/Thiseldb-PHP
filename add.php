@@ -1,4 +1,7 @@
 <?php
+require_once 'imdb.class.php';
+require_once 'functions.php';
+
 $host = 'localhost';
 $db = 'media';
 $user = 'root';
@@ -26,6 +29,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
     $genre            = $_POST['genre'] ?? '';
     $actors           = $_POST['actors'] ?? '';
     $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
+
+    // בדוק אם IMDb כבר קיים במסד
+$check = $conn->prepare("SELECT id FROM posters WHERE imdb_link = ?");
+$check->bind_param("s", $imdb_link);
+/*
+
+$check = $conn->prepare("SELECT id FROM posters WHERE imdb_id = ?");
+$check->bind_param("s", $imdb_id);
+*/
+
+
+$check->execute();
+$check->store_result();
+
+if ($check->num_rows > 0) {
+    echo "<p style='color:orange; text-align:center;'>⚠️ פוסטר עם IMDb הזה כבר קיים</p>";
+exit;
+
+  } else {
+    // שמירה כרגיל
+    $stmt = $conn->prepare("INSERT INTO posters 
+    (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    $stmt->bind_param("sssssssssssiiis",
+      $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
+      $type, $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code);
+
+    $stmt->execute();
+    $poster_id = $conn->insert_id;
+    $stmt->close();
+
+    echo "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה!</p>";
+}
+
+$check->close();
+
 
 $stmt = $conn->prepare("INSERT INTO posters 
 (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
