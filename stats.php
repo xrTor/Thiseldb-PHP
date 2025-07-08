@@ -1,4 +1,5 @@
 <?php
+include 'header.php';
 $host = 'localhost';
 $db = 'media';
 $user = 'root';
@@ -27,7 +28,7 @@ $tags = $conn->query("
   <style>
     body { font-family:sans-serif; max-width:800px; margin:30px auto; }
     h1 { text-align:center; }
-    .box { background:#f9f9f9; padding:15px; margin:10px 0; border-radius:6px; }
+    .box { background:#f9f9f9!important; padding:15px; margin:10px 0; border-radius:6px; }
     table { width:100%; border-collapse:collapse; }
     th, td { padding:8px; border-bottom:1px solid #ccc; text-align:right; }
   </style>

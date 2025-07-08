@@ -1,11 +1,17 @@
-* {font-family: Arial !important;color: black !important}
+* {font-family: Arial !important;}
 a { text-decoration: none !important;}
 body {
+    background-image: url("pattern.png") !important;
       font-family: Arial, sans-serif;
-      margin: 0;
-      background: #B3B3B3;
-      color: #fff;
+         /* 
+      background: #B3B3B3; 
+      background-image: url("paper.gif");
+      */
     }
+    .line-btn {background-image: url("pattern.png") !important;}
+    .line-btn-up {background-image: url("menu.png") !important;}
+    
+
     .poster-wall {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -38,7 +44,7 @@ transform: scale(1.30);
       text-align: center;
       font-size: 1.1em;
 
-color:black;
+color:black !important;
     }
 .poster-title b {
   line-height: 1.0;
@@ -64,7 +70,7 @@ display: flex!important;padding: 5px;
 
 
  a {
-        color:black;
+        color:black !important;
       }
 
 .rtl {
@@ -77,7 +83,7 @@ display: flex!important;padding: 5px;
 .no-results {
   text-align: center;
   font-size: 18px;
-  color: black;
+  color: black !important;
   margin-top: 30px;
 }
 
@@ -146,3 +152,40 @@ display: flex
   text-decoration: underline;
 }
 
+
+/*
+, .w3-button, .w3-black !important, .w3-black !important, .w3-xlarge, .w3-padding-32
+*/
+
+.w3-white{color:black !important; background-color: white !important;}
+
+
+.active {
+  font-weight: bold;
+  /*background-color: #000 !important;*/
+  color: black !important;
+  /*border-bottom: 2px solid #fff;*/
+}
+.w3-button.active {
+  font-weight: bold;
+  color:  white !important; /*white #5CABED*/
+  /*border-bottom: 2px solid #fff;*/
+}
+
+/*
+.active {
+  font-weight: bold;
+  background-color: #000 !important;
+  color: white !important;
+  */
+  /*border-bottom: 2px solid #fff;*/
+/*
+.w3-button.active {
+  font-weight: bold;
+  background-color: #000 !important;
+  color: white !important;
+  */
+  /*border-bottom: 2px solid #fff;*/
+
+
+/* btn text blue #5CABED */

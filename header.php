@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <title>Thiseldb</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/x-icon" href="favicon.png">
+  <?php /*?v=2 */?>
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="w3.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
 <link rel="script" href="script.js">
+<?php $current = basename($_SERVER['PHP_SELF']); ?>
+
 </head>
 <body class="rtl">
+<center>
+<a href="index.php">
+  <h1 style="text-align:center;">
+  <img src="name.png">
+  </h1>
+  <?php include 'nav.php';?>
 
-<a href="index.php"><h1 style="text-align:center;">Thiseldb</h1></a>
+<!-- <b>Thiseldb</b></a> -->
 
-<a href="index.php">עמוד ראשי</a>
-<a href="movies.php">סרטים</a>
-<a href="series.php">סדרות</a>
-<a href="top.php">TOP 10</a>
-<a href="stats.php">סטטיסטיקה</a>
-<a href="dashboard.php">Dashboard</a>
+<?php $current = basename($_SERVER['PHP_SELF']); ?>
 
-  <div style="text-align:center; margin-top:20px;">
-    <a href="add.php">➕ הוסף פוסטר חדש</a>
-  </div>
 
-  <div style="text-align:center; ">
-    <a href="manage_categories.php">🏷️ ניהול תגיות</a>
-  </div>
+    </div>
+    </div>
+  </header>
+
+
 
 <?php
 /*

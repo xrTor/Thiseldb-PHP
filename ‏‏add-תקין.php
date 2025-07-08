@@ -1,5 +1,3 @@
-<?php include 'header.php'; ?>
-
 <?php
 require_once 'imdb.class.php';
 require_once 'functions.php';
@@ -54,16 +52,11 @@ return;
     $stmt = $conn->prepare("INSERT INTO posters 
     (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    
-$has_subtitles = isset($_POST['has_subtitles']) ? 1 : 0;
-$is_dubbed     = isset($_POST['is_dubbed'])     ? 1 : 0;
-$lang_code     = $_POST['lang_code'] ?? '';
 
     $stmt->bind_param("sssssssssssiiis",
       $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
       $type, $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code);
 
-      
     $stmt->execute();
     $poster_id = $conn->insert_id;
     $stmt->close();
@@ -74,6 +67,23 @@ $lang_code     = $_POST['lang_code'] ?? '';
 $check->close();
 
 
+$stmt = $conn->prepare("INSERT INTO posters 
+(title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+
+// ✨ הגדרה מוקדמת לפני bind_param
+$has_subtitles = isset($_POST['has_subtitles']) ? 1 : 0;
+$is_dubbed     = isset($_POST['is_dubbed'])     ? 1 : 0;
+
+$stmt->bind_param("sssssssssssiiis",
+  $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
+  $type, $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code);
+
+        $stmt->execute(); // ✅ זו השורה שהייתה חסרה!
+    $poster_id = $conn->insert_id;
+    $stmt->close();
+
     // 🏷️ שמירת תגיות
     if (!empty($_POST['categories'])) {
         foreach ($_POST['categories'] as $cat_id) {
@@ -83,6 +93,9 @@ $check->close();
             $stmt->close();
         }
     }
+
+    echo "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה!</p>";
+
     if ($type === 'series' && !empty($tvdb_id)) {
         echo "<div style='text-align:center;'>
           🌐 <a href='https://thetvdb.com/series/" . htmlspecialchars($tvdb_id) . "' target='_blank'>TVDB</a>
@@ -318,7 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
   </div>
 </body>
 </html>
-<?php include 'footer.php'; ?>
 
 <?php
 /*

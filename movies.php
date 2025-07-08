@@ -1,4 +1,5 @@
 <?php
+include 'header.php';
 $conn = new mysqli('localhost','root','123456','media');
 if ($conn->connect_error) die("Connection failed");
 
@@ -40,13 +41,13 @@ $rows = $res->fetch_all(MYSQLI_ASSOC);
   <meta charset="UTF-8">
   <title>🎬 סרטים | Thiseldb</title>
   <style>
-    body { font-family: sans-serif; max-width:1000px; margin:40px auto; padding:20px; background:#f9f9f9; }
+    body { font-family: sans-serif; background:#f9f9f9; }
     h1 { text-align:center; }
     .filter { margin-bottom:20px; text-align:center; }
     input, select { padding:6px; margin:0 4px; }
     .poster-wall { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-    .poster { width: 200px; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.05); text-align: center; }
-    .poster img { width: 100%; border-radius: 6px; }
+    .poster { width: 200px; background: #fff; border: 1px solid #ddd; padding: 10px;  box-shadow: 0 0 5px rgba(0,0,0,0.05); text-align: center; }
+    .poster img { width: 100%; }
     .lang-icon { margin-top: 4px; font-size: 18px; }
     .rating { font-size: 14px; margin-top:6px; color:#666; }
   </style>
@@ -111,3 +112,4 @@ $rows = $res->fetch_all(MYSQLI_ASSOC);
 </html>
 
 <?php $stmt->close(); $conn->close(); ?>
+<?php include 'footer.php'; ?>

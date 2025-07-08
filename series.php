@@ -1,4 +1,5 @@
 <?php
+include 'header.php';
 $conn = new mysqli('localhost','root','123456','media');
 if ($conn->connect_error) die("Connection failed");
 
@@ -40,7 +41,7 @@ $rows = $res->fetch_all(MYSQLI_ASSOC);
   <meta charset="UTF-8">
   <title>📺 סדרות | Thiseldb</title>
   <style>
-    body { font-family: sans-serif; max-width:1000px; margin:40px auto; padding:20px; background:#f8f8f8; }
+    body { font-family: sans-serif; background:#f8f8f8; }
     h1 { text-align:center; }
     .filter { text-align:center; margin-bottom:20px; }
     input, select { padding:6px; margin:0 4px; }
@@ -105,3 +106,4 @@ $rows = $res->fetch_all(MYSQLI_ASSOC);
 </body>
 </html>
 <?php $stmt->close(); $conn->close(); ?>
+<?php include 'footer.php'; ?>

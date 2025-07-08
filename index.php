@@ -1,3 +1,5 @@
+<?php include 'header.php'; ?>
+
 <?php
 $host = 'localhost';
 $db   = 'media';
@@ -83,8 +85,8 @@ $sql = "SELECT * FROM posters";
 if (!empty($where)) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
-$sql .= " $orderBy";
 $sql .= " $orderBy LIMIT $limit OFFSET $offset";
+
 $stmt = $conn->prepare($sql);
 if ($types) {
     $stmt->bind_param($types, ...$params);
@@ -108,7 +110,6 @@ if (!empty($_GET['subtitles'])) {
   <meta charset="UTF-8">
   <title>Thiseldb</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/x-icon" href="favicon.png">
 <link rel="script" href="script.js">
 </head>
 <body class="rtl">
@@ -295,3 +296,5 @@ echo "<div style='font-size:12px; color:#555;'>$icon</div>";
 ?>
 
 <?php $conn->close(); ?>
+
+<?php include 'footer.php'; ?>

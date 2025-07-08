@@ -1,4 +1,5 @@
 <?php
+include 'header.php';
 $conn = new mysqli('localhost','root','123456','media');
 if ($conn->connect_error) die("Connection failed");
 

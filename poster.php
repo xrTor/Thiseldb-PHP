@@ -1,4 +1,6 @@
 <?php
+include 'header.php';
+
 $host = 'localhost';
 $db = 'media';
 $user = 'root';
@@ -29,16 +31,15 @@ $row = $result->fetch_assoc();
     .poster-page {
       max-width: 800px;
       margin: 30px auto;
-      background: #fff;
+          background-image: url("wbg.png") !important;
+      /*       background: #fff; */
       padding: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
-    }
+      }
     .poster-image {
       width: 200px;
       float: right;
       margin-left: 20px;
-      border-radius: 1px;
     }
     .poster-details {
       overflow: hidden;
@@ -51,8 +52,7 @@ $row = $result->fetch_assoc();
       padding: 5px 10px;
       margin: 5px;
       display: inline-block;
-      border-radius: 4px;
-      font-size: 13px;
+         font-size: 13px;
     }
     .actions {
       margin-top: 20px;
@@ -185,6 +185,7 @@ $row = $result->fetch_assoc();
 </body>
 </html>
 
+<?php include 'footer.php'; ?>
 
 <?php
 /*
