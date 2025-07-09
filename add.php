@@ -38,9 +38,9 @@ $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
 if ($youtube_trailer === '0') {
   $youtube_trailer = '';
 }
-
+/*
 echo "<pre>טריילר שנשלח: " . htmlspecialchars($youtube_trailer) . "</pre>";
-
+*/
     // בדוק אם IMDb כבר קיים במסד
 $check = $conn->prepare("SELECT id FROM posters WHERE imdb_link = ?");
 $check->bind_param("s", $imdb_link);
@@ -80,8 +80,10 @@ $lang_code     = $_POST['lang_code'] ?? '';
     echo "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה!</p>";
 }
 
+
 $check->close();
 
+  include 'flags.php'; 
 
     // 🏷️ שמירת תגיות
     if (!empty($_POST['categories'])) {
@@ -97,7 +99,7 @@ $check->close();
           🌐 <a href='https://thetvdb.com/series/" . htmlspecialchars($tvdb_id) . "' target='_blank'>TVDB</a>
         </div>";
     }
-}
+
 
 
 ?>

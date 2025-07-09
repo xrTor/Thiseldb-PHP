@@ -190,3 +190,27 @@ display: flex
 
 /* btn text blue #5CABED */
 
+.flag-inline {
+  display: inline-flex;
+  align-items: center;
+  margin: 6px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.flag-inline:hover {
+  background: #f0f0f0;
+}
+
+.flag-inline input[type="checkbox"] {
+  margin-left: 6px;
+}
+
+.flag-inline img {
+  height: 16px;
+  margin-left: 6px;
+}
