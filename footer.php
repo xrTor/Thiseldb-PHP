@@ -21,8 +21,10 @@ $tags = $conn->query("
 ?>
 
 <footer style="text-align:center; margin-top:30px; font-size:14px;">
-  <p>&copy; <?= date("Y") ?> Thiseldb </p>
-
+   <a href="index.html"><img src="logo1.png" style="width:100px" alt="Thiseldb" title:"Thiseldb"></a>
+   <br> 
+   <p>&copy; <?= date("Y")?>
+</p>
   סטטיסטיקה:
 
   <div class="box">

@@ -31,6 +31,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"
     $genre            = $_POST['genre'] ?? '';
     $actors           = $_POST['actors'] ?? '';
     $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
+    
+
+}
+$youtube_trailer  = $_POST['youtube_trailer'] ?? '';
+if ($youtube_trailer === '0') {
+  $youtube_trailer = '';
+}
+
+echo "<pre>טריילר שנשלח: " . htmlspecialchars($youtube_trailer) . "</pre>";
 
     // בדוק אם IMDb כבר קיים במסד
 $check = $conn->prepare("SELECT id FROM posters WHERE imdb_link = ?");
@@ -246,7 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <label>קישור ל-IMDb:</label><br>
     <input type="text" id="imdb_link" name="imdb_link"><br>
     <label>🎞️ קישור לטריילר YouTube:</label><br>
-    <input type="text" name="youtube_trailer" placeholder=""><br>
+    <br>
+    <input type="text" name="youtube_trailer" id="youtube_trailer">
    
     <label>🖼️ כתובת תמונה:</label><br>
     <input type="text" id="image_url" name="image_url" required><br>

@@ -10,6 +10,7 @@ echo "<!-- current page: $current -->";
   $pages = [
 
     'index.php' => 'עמוד ראשי',
+    'home.php' => 'בית',
     'movies.php' => '🎬 סרטים',
     'series.php' => '📺 סדרות',
     'random.php' => '📊 סרט רנדומלי',
