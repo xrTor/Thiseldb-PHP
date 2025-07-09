@@ -118,6 +118,7 @@ $stmt->close();
   <title>ספריית מדיה</title>
   <link rel="stylesheet" href="style.css">
   <style>
+/* עיצוב גוף הדף */
 body {
   direction: rtl;
   font-family: Arial, sans-serif;
@@ -136,12 +137,12 @@ body {
 }
 
 .poster:hover {
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .poster img {
   max-width: 100%;
-  height: 200px;
+  height: 400px;
   object-fit: cover;
 }
 
@@ -161,6 +162,44 @@ body {
 
 .poster-list li img {
   height: 60px;
+  border-radius: 4px;
+}
+
+/* מצב רגיל — בדיוק כמו בהתחלה */
+.poster-regular {
+  list-style: none;
+  padding: 20px;
+  margin: 0;
+  text-align: center;
+}
+
+.poster-regular li {
+  display: inline-block;
+  margin: 10px;
+  vertical-align: top;
+  width: 180px;
+}
+
+.poster-regular li img {
+  height: 150px;
+  border-radius: 4px;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.poster-regular li strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.poster-regular li a {
+  text-decoration: none;
+  color: #333;
+}
+
+.poster-regular li a:hover {
+  color: #0078d4;
 }
 
   </style>
@@ -218,181 +257,7 @@ body {
   </select>
   <br><br>
 
-  <!-- 🌐 שפות עם דגלים -->
-  <div style="margin:10px 0;" class="ltr">
-    <strong>שפות זרות:</strong><br>
-    <?php
-$languages = [
-   ['code' => 'spanish',
-  'label' => 'spanish',
-  'flag' => 'flags/spanish.gif'],
-
-  ['code' => 'french',
-  'label' => 'french',
-  'flag' => 'flags/french.gif'],
-
-  ['code' => 'arabic',
-  'label' => 'arabic',
-  'flag' => 'flags/arabic.gif'],
-
-  ['code' => 'portuguese',
-  'label' => 'portuguese',
-  'flag' => 'flags/portuguese.gif'],
-
-  ['code' => 'brazilian-portuguese',
-  'label' => 'brazilian portuguese',
-  'flag' => 'flags/brazilian-portuguese.gif'],
-
-  ['code' => 'bulgarian',
-  'label' => 'bulgarian',
-  'flag' => 'flags/bulgarian.gif'],
-
-  ['code' => 'chinese',
-  'label' => 'chinese',
-  'flag' => 'flags/chinese.gif'],
-
-  ['code' => 'croatian',
-  'label' => 'croatian',
-  'flag' => 'flags/croatian.gif'],
-
-  ['code' => 'czech',
-  'label' => 'czech',
-  'flag' => 'flags/czech.gif'],
-
-  ['code' => 'danish',
-  'label' => 'danish',
-  'flag' => 'flags/danish.gif'],
-
-  ['code' => 'dutch',
-  'label' => 'dutch',
-  'flag' => 'flags/dutch.gif'],
-
-  ['code' => 'estonian',
-  'label' => 'estonian',
-  'flag' => 'flags/estonian.gif'],
-
-  ['code' => 'finnish',
-  'label' => 'finnish',
-  'flag' => 'flags/finnish.gif'],
-
-  ['code' => 'german',
-  'label' => 'german',
-  'flag' => 'flags/german.gif'],
-
-  ['code' => 'greek',
-  'label' => 'greek',
-  'flag' => 'flags/greek.gif'],
-
-  ['code' => 'hindi',
-  'label' => 'hindi',
-  'flag' => 'flags/hindi.gif'],
-
-  ['code' => 'hungarian',
-  'label' => 'hungarian',
-  'flag' => 'flags/hungarian.gif'],
-
-  ['code' => 'icelandic',
-  'label' => 'icelandic',
-  'flag' => 'flags/icelandic.gif'],
-
-  ['code' => 'indonesian',
-  'label' => 'indonesian',
-  'flag' => 'flags/indonesian.gif'],
-
-  ['code' => 'italian',
-  'label' => 'italian',
-  'flag' => 'flags/italian.gif'],
-
-  ['code' => 'japanese',
-  'label' => 'japanese',
-  'flag' => 'flags/japanese.gif'],
-
-  ['code' => 'korean',
-  'label' => 'korean',
-  'flag' => 'flags/korean.gif'],
-
-  ['code' => 'latvian',
-  'label' => 'latvian',
-  'flag' => 'flags/latvian.gif'],
-
-  ['code' => 'lithuanian',
-  'label' => 'lithuanian',
-  'flag' => 'flags/lithuanian.gif'],
-
-  ['code' => 'malay',
-  'label' => 'malay',
-  'flag' => 'flags/malay.gif'],
-
-  ['code' => 'norwegian',
-  'label' => 'norwegian',
-  'flag' => 'flags/norwegian.gif'],
-
-  ['code' => 'persian',
-  'label' => 'persian',
-  'flag' => 'flags/persian.gif'],
-
-  ['code' => 'polish',
-  'label' => 'polish',
-  'flag' => 'flags/polish.gif'],
-
-  ['code' => 'romanian',
-  'label' => 'romanian',
-  'flag' => 'flags/romanian.gif'],
-
-  ['code' => 'russian',
-  'label' => 'russian',
-  'flag' => 'flags/russian.gif'],
-
-  ['code' => 'serbian',
-  'label' => 'serbian',
-  'flag' => 'flags/serbian.gif'],
-
-  ['code' => 'slovak',
-  'label' => 'slovak',
-  'flag' => 'flags/slovak.gif'],
-
-  ['code' => 'slovenian',
-  'label' => 'slovenian',
-  'flag' => 'flags/slovenian.gif'],
-
-  ['code' => 'swedish',
-  'label' => 'swedish',
-  'flag' => 'flags/swedish.gif'],
-
-  ['code' => 'thai',
-  'label' => 'thai',
-  'flag' => 'flags/thai.gif'],
-
-  ['code' => 'turkish',
-  'label' => 'turkish',
-  'flag' => 'flags/turkish.gif'],
-
-  ['code' => 'ukrainian',
-  'label' => 'ukrainian',
-  'flag' => 'flags/ukrainian.gif'],
-
-  ['code' => 'vietnamese',
-  'label' => 'vietnamese',
-  'flag' => 'flags/vietnamese.gif'],
-
-  ['code' => 'welsh',
-  'label' => 'welsh',
-  'flag' => 'flags/welsh.gif'],
-
-];
-
- foreach ($languages as $lang) {
-  $checked = isset($_GET['languages']) && in_array($lang['code'], $_GET['languages']) ? 'checked' : '';
-  echo "<label style='display:inline-block; margin:6px;'>
-          <input type='checkbox' name='languages[]' value='{$lang['code']}' $checked>
-          <img src='{$lang['flag']}' alt='{$lang['label']}' title='{$lang['label']}' style='height:16px; vertical-align:middle;'> 
-        </label>";
-}
-/*
-{$lang['label']}
- */
-    ?>
-  </div>
+  <?php include 'flags.php'; ?>
 
   <!-- ✅ תיבות סימון -->
   <label><input type="checkbox" name="is_dubbed" value="1" <?= isset($_GET['is_dubbed']) ? 'checked' : '' ?>> מדובב</label>
@@ -406,17 +271,18 @@ $languages = [
 <!-- 🖼️ תצוגת פוסטרים -->
 <?php if (empty($rows)): ?>
   <p style="text-align:center;">😢 לא נמצאו תוצאות</p>
+
 <?php elseif ($view === 'grid'): ?>
+  <!-- תצוגת Grid -->
   <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:20px; padding:20px;">
     <?php foreach ($rows as $row): ?>
       <div class="poster">
         <a href="poster.php?id=<?= $row['id'] ?>">
           <img src="<?= htmlspecialchars($row['image_url']) ?>">
           <strong><?= htmlspecialchars($row['title_en']) ?></strong>
-          <?= htmlspecialchars($row['title_he']) ?>
+          <?= htmlspecialchars($row['title_he']) ?><br>
           [<?= $row['year'] ?>]
         </a>
-
         <?php if ($row['imdb_link']): ?>
           <div><a href="<?= $row['imdb_link'] ?>" target="_blank">⭐ <?= $row['imdb_rating'] ?>/10 IMDb</a></div>
         <?php endif; ?>
@@ -424,28 +290,28 @@ $languages = [
     <?php endforeach; ?>
   </div>
 
-
 <?php elseif ($view === 'list'): ?>
-  <!-- תצוגת רשימה -->
-  <ul class="poster-list" style="list-style:none; padding:20px;">
+  <!-- תצוגת List -->
+  <ul class="poster-list">
     <?php foreach ($rows as $row): ?>
       <li>
         <img src="<?= htmlspecialchars($row['image_url']) ?>">
-        <strong><?= htmlspecialchars($row['title_en']) ?></strong>
+        <strong><?= htmlspecialchars($row['title_en']) ?></strong> —
         <?= htmlspecialchars($row['title_he']) ?> (<?= $row['year'] ?>)
         ⭐ <?= $row['imdb_rating'] ?>
         <a href="poster.php?id=<?= $row['id'] ?>">📄 צפייה</a>
       </li>
     <?php endforeach; ?>
   </ul>
+
 <?php else: ?>
   <!-- תצוגה רגילה -->
-  <ul style="list-style:none; text-align:center;">
+  <ul class="poster-regular">
     <?php foreach ($rows as $row): ?>
-      <li style="display:inline-block; margin:10px;">
+      <li>
         <a href="poster.php?id=<?= $row['id'] ?>">
-          <img src="<?= htmlspecialchars($row['image_url']) ?>" style="height:150px;"><br>
-          <strong><?= htmlspecialchars($row['title_en']) ?></strong><br>
+          <img src="<?= htmlspecialchars($row['image_url']) ?>">
+          <strong><?= htmlspecialchars($row['title_en']) ?></strong>
           <?= htmlspecialchars($row['title_he']) ?><br>
           [<?= $row['year'] ?>]
         </a>
@@ -455,7 +321,6 @@ $languages = [
       </li>
     <?php endforeach; ?>
   </ul>
-
 <?php endif; ?>
 
 <!-- 📚 דפדוף -->
