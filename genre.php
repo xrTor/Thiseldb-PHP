@@ -1,4 +1,7 @@
 <?php
+
+include 'header.php';
+
 $host = 'localhost';
 $db = 'media';
 $user = 'root';
@@ -50,5 +53,9 @@ $result = $conn->query("SELECT * FROM posters WHERE genre LIKE '%$genre%'");
   </div>
 </body>
 </html>
+
+<?php
+include 'footer.php';
+?>
 
 <?php $conn->close(); ?>

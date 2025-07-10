@@ -35,7 +35,19 @@
   text-align: left;
   font-weight: normal;
 }
+/*  ריווח שמשפיע על ADD */
+/*
+.language-cell {
+  height: 18px !important;
+  line-height: 1 !important;
+}
 
+.language-td {
+  height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+*/
   </style>
 
   <table class="languages-table">

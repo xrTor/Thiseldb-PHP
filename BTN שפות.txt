@@ -1,0 +1,84 @@
+Albania              → Albanian  
+Arab League          → Arabic  
+Argentina            → Spanish  
+Australia            → English  
+Austria              → German  
+Bahamas              → English  
+Bangladesh           → Bengali  
+Belgium              → Dutch / French / German  
+Bosnia Herzegovina   → Bosnian / Croatian / Serbian  
+Brazil               → Portuguese  
+Bulgaria             → Bulgarian  
+Cambodia             → Khmer  
+Canada               → English / French  
+Chile                → Spanish  
+China                → Chinese (Mandarin)  
+Colombia             → Spanish  
+Congo                → French  
+Croatia              → Croatian  
+Cuba                 → Spanish  
+Czech Republic       → Czech  
+Denmark              → Danish  
+Egypt                → Arabic  
+Estonia              → Estonian  
+Finland              → Finnish  
+France               → French  
+Germany              → German  
+Greece               → Greek  
+Hong Kong            → Cantonese / English  
+Hungary              → Hungarian  
+Iceland              → Icelandic  
+India                → Hindi / English / (many others)  
+Indonesia            → Indonesian  
+Iran                 → Persian (Farsi)  
+Ireland              → Irish / English  
+Israel               → Hebrew  
+Italy                → Italian  
+Jamaica              → English / Jamaican Patois  
+Japan                → Japanese  
+Kuwait               → Arabic  
+Latvia               → Latvian  
+Lebanon              → Arabic  
+Lithuania            → Lithuanian  
+Luxembourg           → Luxembourgish / French / German  
+Macedonia            → Macedonian  
+Malaysia             → Malay  
+Mexico               → Spanish  
+Nauru                → Nauruan / English  
+Netherlands          → Dutch  
+New Zealand          → English / Māori  
+Nigeria              → English / Hausa / Yoruba / Igbo  
+North Korea          → Korean  
+Norway               → Norwegian  
+Pakistan             → Urdu / English  
+Peru                 → Spanish / Quechua  
+Philippines          → Filipino / English  
+Poland               → Polish  
+Portugal             → Portuguese  
+Puerto Rico          → Spanish / English  
+Romania              → Romanian  
+Russia               → Russian  
+Saudi Arabia         → Arabic  
+Scotland             → English / Scots / Scottish Gaelic  
+Serbia               → Serbian  
+Seychelles           → Seychellois Creole / French / English  
+Singapore            → English / Mandarin / Malay / Tamil  
+Slovakia             → Slovak  
+Slovenia             → Slovene  
+South Africa         → Afrikaans / English / Zulu / Xhosa (11 official)  
+South Korea          → Korean  
+Spain                → Spanish  
+Sweden               → Swedish  
+Switzerland          → German / French / Italian / Romansh  
+Taiwan               → Mandarin  
+Thailand             → Thai  
+Turkey               → Turkish  
+Ukraine              → Ukrainian  
+Union of Soviet Socialist Republics → Russian / (varied by republic)  
+United Kingdom       → English / Welsh / Scottish Gaelic  
+United States of America → English  
+Vanuatu              → Bislama / English / French  
+Venezuela            → Spanish  
+Vietnam              → Vietnamese  
+Wales                → Welsh / English  
+Yugoslavia           → Serbo-Croatian / Slovenian / Macedonian / Albanian / (others)

@@ -6,6 +6,7 @@ require_once 'imdb.class.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// חיבור למסד
 $conn = new mysqli('localhost', 'root', '123456', 'media');
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
@@ -13,6 +14,7 @@ $message = '';
 $poster_id = 0;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  // קבלת נתונים
   $title_en         = trim($_POST['title_en'] ?? '');
   $title_he         = trim($_POST['title_he'] ?? '');
   $year             = trim($_POST['year'] ?? '');
@@ -40,13 +42,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $imdb_id = $m[0];
   }
 
-  // 💡 תיקון ניקוי טריילר YouTube — רק קישור תקף יישמר
   if ($youtube_trailer === '0' || strlen($youtube_trailer) < 10 ||
       !preg_match('/(?:v=|\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $youtube_trailer)) {
     $youtube_trailer = '';
   }
 
-  echo "<pre>🎥 טריילר לפני שמירה: " . htmlspecialchars($youtube_trailer) . "</pre>";
+  if (strpos($youtube_trailer, 'youtu') !== false && strpos($youtube_trailer, 'http') === false) {
+    $youtube_trailer = 'https://' . $youtube_trailer;
+  }
 
   if (!empty($imdb_id)) {
     $check = $conn->prepare("SELECT id FROM posters WHERE imdb_id = ?");
@@ -54,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $check->execute();
     $check->store_result();
     if ($check->num_rows > 0) {
-      $message = "<p style='color:orange; text-align:center;'>⚠️ הפוסטר כבר קיים במסד</p>";
+      $message = "⚠️ הפוסטר כבר קיים במסד";
     }
     $check->close();
   }
@@ -66,136 +69,249 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
        imdb_id, metacritic_score, rt_score, metacritic_link, rt_link)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    if (!$stmt) {
-      $message = "<p style='color:red;'>❌ שגיאה ב־prepare: " . $conn->error . "</p>";
-    } else {
-      $stmt->bind_param("sssssssssssiisssssss",
-        $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
-        $type, $tvdb_id, $genre, $actors, $youtube_trailer,
-        $has_subtitles, $is_dubbed, $lang_code,
-        $imdb_id, $metacritic_score, $rt_score, $metacritic_link, $rt_link
-      );
+    $stmt->bind_param("ssssssssssssisssssss",
+      $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot, $type,
+      $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed,
+      $lang_code, $imdb_id, $metacritic_score, $rt_score, $metacritic_link, $rt_link
+    );
 
-      $stmt->execute();
+    $stmt->execute();
 
-      if ($stmt->affected_rows > 0) {
-        $poster_id = $conn->insert_id;
-        $message = "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה! (ID: $poster_id)</p>";
-
-        foreach ($languages_posted as $code) {
-          $lang_stmt = $conn->prepare("INSERT INTO poster_languages (poster_id, lang_code) VALUES (?, ?)");
-          $lang_stmt->bind_param("is", $poster_id, $code);
-          $lang_stmt->execute();
-          $lang_stmt->close();
-        }
-
-        foreach ($categories as $cat_id) {
-          $cat_stmt = $conn->prepare("INSERT INTO poster_categories (poster_id, category_id) VALUES (?, ?)");
-          $cat_stmt->bind_param("ii", $poster_id, intval($cat_id));
-          $cat_stmt->execute();
-          $cat_stmt->close();
-        }
-      } else {
-        $message = "<p style='color:red; text-align:center;'>❌ שמירת הפוסטר נכשלה: " . $stmt->error . "</p>";
+    if ($stmt->affected_rows > 0) {
+      $poster_id = $conn->insert_id;
+      foreach ($languages_posted as $code) {
+        $lang_stmt = $conn->prepare("INSERT INTO poster_languages (poster_id, lang_code) VALUES (?, ?)");
+        $lang_stmt->bind_param("is", $poster_id, $code);
+        $lang_stmt->execute();
+        $lang_stmt->close();
       }
-
-      $stmt->close();
+      foreach ($categories as $cat_id) {
+        $cat_stmt = $conn->prepare("INSERT INTO poster_categories (poster_id, category_id) VALUES (?, ?)");
+        $cat_stmt->bind_param("ii", $poster_id, intval($cat_id));
+        $cat_stmt->execute();
+        $cat_stmt->close();
+      }
+      $message = "✅ הפוסטר נשמר בהצלחה (ID: $poster_id)";
+    } else {
+      $message = "❌ שמירת הפוסטר נכשלה: " . $stmt->error;
     }
+    $stmt->close();
   }
 }
+$conn->close();
 ?>
+
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he">
 <head>
   <meta charset="UTF-8">
   <title>📥 הוספת פוסטר</title>
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    form { max-width:600px; margin:auto; text-align:right; direction:rtl; }
-    input, textarea, select { width:100%; margin-bottom:10px; padding:6px; }
-    .language-cell { display:flex; gap:6px; align-items:center; font-size:13px; }
-    .language-cell img { height:16px; }
+   body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  padding: 20px;
+  direction: rtl;
+  text-align: right;
+}
+
+form {
+  background: #fff;
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+label {
+  font-weight: bold;
+  margin-top: 12px;
+  display: block;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  margin-bottom: 1px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #0077cc;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #005fa3;
+}
+
+#posterPreview, #trailerPreview {
+  display: none;
+  background: #f8f8f8;
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* טבלת שפות */
+.flags-wrapper {
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: Calibri, sans-serif !important;
+  font-weight: normal !important;
+}
+
+.languages-table {
+  direction: ltr !important;
+  text-align: left !important;
+  border-collapse: collapse;
+  margin: 10px auto;
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+}
+
+.language-td {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  margin: 0 !important;
+  height: 26px !important;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.language-cell {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  text-align: left;
+  direction: ltr;
+  line-height: 16px !important;
+  height: 22px;
+}
+
+.language-cell input[type="checkbox"] {
+  transform: scale(1.2);
+  margin: 0;
+}
+
+.language-cell img {
+  height: 16px;
+  vertical-align: middle;
+  margin: 0;
+}
+
+.language-cell span {
+  display: inline-block;
+  min-width: 80px;
+  font-weight: normal;
+  text-align: left;
+  margin: 0;
+}
+
+.language-cell {
+  height: 18px !important;
+  line-height: 1 !important;
+}
+
+.language-td {
+  height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
   </style>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const imdbInput = document.querySelector("[name='imdb_link']");
-      const imageUrlInput = document.querySelector("[name='image_url']");
-      const posterPreview = document.getElementById("posterPreview");
+  
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const imdbInput = document.querySelector("[name='imdb_link']");
+    const imageUrlInput = document.querySelector("[name='image_url']");
+    const trailerInput = document.querySelector("[name='youtube_trailer']");
+    const posterPreview = document.getElementById("posterPreview");
+    const trailerPreview = document.getElementById("trailerPreview");
 
-      function updatePosterPreview(url) {
-        if (url) {
-          posterPreview.innerHTML = `
-            <p style="margin-bottom:8px; font-weight:bold;">🖼️ תצוגה מקדימה:</p>
-            <img src="${url}" style="max-width:100%; border-radius:6px;">
-          `;
-          posterPreview.style.display = "block";
-        } else {
-          posterPreview.innerHTML = '';
-          posterPreview.style.display = "none";
-        }
-      }
+    function updatePosterPreview(url) {
+      if (!url) return posterPreview.style.display = 'none';
+      posterPreview.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:6px;">`;
+      posterPreview.style.display = 'block';
+    }
 
-      function fetchDetails(imdbId) {
-        const apiKey = '1ae9a12e';
-        fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.Response === "True") {
-              document.querySelector("[name='title_en']").value     = data.Title || '';
-              document.querySelector("[name='year']").value         = data.Year || '';
-              document.querySelector("[name='imdb_rating']").value  = data.imdbRating || '';
-              document.querySelector("[name='image_url']").value    = data.Poster || '';
-              document.querySelector("[name='plot']").value         = data.Plot || '';
-              document.querySelector("[name='genre']").value        = data.Genre || '';
-              document.querySelector("[name='actors']").value       = data.Actors || '';
-              document.querySelector("[name='imdb_id']").value      = imdbId;
-              updatePosterPreview(data.Poster || '');
-            } else {
-              alert("❌ IMDb לא החזיר תוצאה תקפה");
-            }
-          })
-          .catch(() => alert("❌ שגיאה בחיבור ל־OMDb"));
-      }
+    function updateTrailerPreview(url) {
+      const match = url.match(/(?:v=|\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const videoId = match ? match[1] : null;
+      if (!videoId) return trailerPreview.style.display = 'none';
+      trailerPreview.innerHTML = `<iframe width="100%" height="300" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+      trailerPreview.style.display = 'block';
+    }
 
-      const imdbMatch = imdbInput.value.trim().match(/tt\d+/);
-      if (imdbMatch) fetchDetails(imdbMatch[0]);
+    function fetchDetails(imdbId) {
+      fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=1ae9a12e`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.Response !== "True") return alert("❌ IMDb לא מצא פרטים.");
+          document.querySelector("[name='title_en']").value = data.Title || '';
+          document.querySelector("[name='year']").value = data.Year || '';
+          document.querySelector("[name='imdb_rating']").value = data.imdbRating || '';
+          document.querySelector("[name='image_url']").value = data.Poster || '';
+          document.querySelector("[name='plot']").value = data.Plot || '';
+          document.querySelector("[name='genre']").value = data.Genre || '';
+          document.querySelector("[name='actors']").value = data.Actors || '';
+          document.querySelector("[name='imdb_id']").value = imdbId;
+          updatePosterPreview(data.Poster || '');
+        });
+    }
 
-      imageUrlInput.addEventListener("input", () => updatePosterPreview(imageUrlInput.value.trim()));
-      updatePosterPreview(imageUrlInput.value.trim());
+    window.fetchFromIMDb = function () {
+      const match = imdbInput.value.trim().match(/tt\d+/);
+      if (!match) return alert("❌ מזהה IMDb לא תקין.");
+      fetchDetails(match[0]);
+    };
 
-      window.fetchFromIMDb = function () {
-        const match = imdbInput.value.trim().match(/tt\d+/);
-        if (!match) {
-          alert("❌ קישור IMDb לא תקף");
-          return;
-        }
-        fetchDetails(match[0]);
-      };
-    });
-  </script>
+
+    imageUrlInput.addEventListener("input", () => updatePosterPreview(imageUrlInput.value.trim()));
+    trailerInput.addEventListener("input", () => updateTrailerPreview(trailerInput.value.trim()));
+  });
+</script>
+
 </head>
 <body>
 
 <h2>📥 הוספת פוסטר חדש</h2>
-<?= $message ?>
+
+<?php if (!empty($message)): ?>
+  <div style="padding:10px; background:#e0f7ff; border:1px solid #00a; border-radius:6px; margin:10px auto; max-width:700px;">
+    <?= $message ?>
+  </div>
+<?php endif; ?>
 
 <form method="post" action="add.php">
   <label>🔗 קישור ל־IMDb:</label>
-  <input type="text" name="imdb_link" value="<?= htmlspecialchars($imdb_link ?? '') ?>">
-  <button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button><br>
+  <input type="text" name="imdb_link"><br>
+  <button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button>
 
   <label>כותרת באנגלית:</label><input type="text" name="title_en">
   <label>כותרת בעברית:</label><input type="text" name="title_he">
   <label>🗓️ שנה:</label><input type="text" name="year">
   <label>🎯 דירוג IMDb:</label><input type="text" name="imdb_rating">
   <label>🖼️ כתובת תמונה:</label><input type="text" name="image_url">
-  <div id="posterPreview" style="margin:10px 0; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f8f8f8; display:none;"></div>
-
+  <div id="posterPreview"></div>
   <label>📘 תקציר:</label><textarea name="plot" rows="3"></textarea>
   <label>🎭 ז'אנר:</label><input type="text" name="genre">
   <label>👥 שחקנים:</label><input type="text" name="actors">
   <label>🔗 TVDB ID:</label><input type="text" name="tvdb_id">
   <label>🎞️ טריילר YouTube:</label><input type="text" name="youtube_trailer">
+  <div id="trailerPreview"></div>
   <label>סוג:</label>
   <select name="type">
     <option value="movie">סרט</option>
@@ -209,13 +325,77 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <label>🔗 קישור RT:</label><input type="text" name="rt_link">
   <label>🔤 IMDb ID:</label><input type="text" name="imdb_id">
 
-  <div style="text-align:left;"><?php include 'flags.php'; ?></div>
+<div style="
+  all: unset;
+  display: block;
+  direction: ltr;
+  text-align: left;
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+">
+  <?php include 'flags.php'; ?>
+
+  
+</div>
+
+  <br>
   <button type="submit">💾 שמור פוסטר</button>
 </form>
 
-<?php
-$conn->close();
-include 'footer.php';
-?>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const imdbInput = document.querySelector("[name='imdb_link']");
+    let debounceTimer;
+
+    function fetchDetails(imdbId) {
+      fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=1ae9a12e`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.Response !== "True") return alert("❌ IMDb לא החזיר תוצאה תקפה");
+
+          document.querySelector("[name='title_en']").value    = data.Title || '';
+          document.querySelector("[name='year']").value        = data.Year || '';
+          document.querySelector("[name='imdb_rating']").value = data.imdbRating || '';
+          document.querySelector("[name='image_url']").value   = data.Poster || '';
+          document.querySelector("[name='plot']").value        = data.Plot || '';
+          document.querySelector("[name='genre']").value       = data.Genre || '';
+          document.querySelector("[name='actors']").value      = data.Actors || '';
+          document.querySelector("[name='imdb_id']").value     = imdbId;
+
+          const posterPreview = document.getElementById("posterPreview");
+          posterPreview.innerHTML = data.Poster
+            ? `<img src="${data.Poster}" style="max-width:100%; border-radius:6px;">`
+            : '';
+          posterPreview.style.display = data.Poster ? 'block' : 'none';
+        })
+        .catch(() => alert("❌ שגיאת רשת מול OMDb"));
+    }
+
+    // ⏱️ שליפה אוטומטית אם שדה כבר מכיל מזהה
+    const existingMatch = imdbInput.value.trim().match(/tt\d+/);
+    if (existingMatch) fetchDetails(existingMatch[0]);
+
+    // 🖊️ השלמה בזמן הקלדה
+    imdbInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const match = imdbInput.value.trim().match(/tt\d+/);
+        if (match) fetchDetails(match[0]);
+      }, 500);
+    });
+
+    // 🕵️ כפתור שליפה ידני
+    window.fetchFromIMDb = function () {
+      const match = imdbInput.value.trim().match(/tt\d+/);
+      if (!match) return alert("❌ מזהה IMDb לא תקין.");
+      fetchDetails(match[0]);
+    };
+  });
+</script>
+
+
 </body>
 </html>
+
+<?php include 'footer.php'; ?>
