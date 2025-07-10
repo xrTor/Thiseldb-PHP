@@ -1,11 +1,10 @@
 <?php
 $languages = [
   
-  ['code' => 'hebrew', 'label' => 'עברית', 'flag' => 'flags/hebrew.gif'],
-  ['code' => 'hebdub', 'label' => 'מדובב', 'flag' => 'flags/hebdub.gif'],
   ['code' => 'none', 'label' => 'ללא תרגום', 'flag' => 'flags/none.gif'],
   ['code' => 'silent', 'label' => 'ללא דיאלוג', 'flag' => 'flags/silent.gif'],
-  ['code' => 'netflix', 'label' => 'Netflix', 'flag' => 'flags/netflix.gif'],
+  ['code' => 'hebrew', 'label' => 'עברית', 'flag' => 'flags/hebrew.gif'],
+  ['code' => 'hebdub', 'label' => 'מדובב', 'flag' => 'flags/hebdub.gif'],
   ['code' => 'spanish', 'label' => 'Spanish', 'flag' => 'flags/spanish.gif'],
   ['code' => 'french', 'label' => 'French', 'flag' => 'flags/french.gif'],
   ['code' => 'arabic', 'label' => 'Arabic', 'flag' => 'flags/arabic.gif'],

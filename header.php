@@ -11,7 +11,7 @@
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
 
 </head>
-<body class="rtl">
+<body class="rtl" style="text-align: center!important">
 <center>
 <a href="index.php">
   <h1 style="text-align:center;">

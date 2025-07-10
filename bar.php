@@ -1,3 +1,9 @@
+<center>
+  <style>
+    body {
+    text-align: center!important;
+}
+</style>
 <?php
 session_start();
 include 'header.php';
@@ -110,8 +116,9 @@ $rows = [];
 while ($row = $result->fetch_assoc()) $rows[] = $row;
 $stmt->close();
 ?>
-
+<body>
 <!-- 🔍 טופס חיפוש מתקדם -->
+ 
 <form method="get" action="home.php" style="margin:20px; text-align:right;">
   <input type="text" name="search" placeholder="🎬 שם " value="<?= htmlspecialchars($search) ?>">
   <input type="text" name="year" placeholder="🗓️ שנה" value="<?= htmlspecialchars($year) ?>">
@@ -119,7 +126,7 @@ $stmt->close();
   <input type="text" name="imdb_id" placeholder="🔗 IMDb ID" value="<?= htmlspecialchars($imdb_id) ?>">
   <input type="text" name="genre" placeholder="🎭 ז'אנר (למשל Action)" value="<?= htmlspecialchars($genre) ?>">
   <input type="text" name="actor" placeholder="👥 שחקנים (למשל Tom Cruise)" value="<?= htmlspecialchars($actor) ?>">
-
+<br>
   <select name="type">
     <option value="">סוג</option>
     <option value="movie" <?= $type == 'movie' ? 'selected' : '' ?>>🎬 סרט</option>
@@ -133,10 +140,10 @@ $stmt->close();
     <option value="rating_desc" <?= ($_GET['sort'] ?? '') == 'rating_desc' ? 'selected' : '' ?>>דירוג ↓</option>
   </select>
 <!-- תצוגה -->
-<div style="margin:10px 0;">
+<span style="margin:10px 0;">
 
-<label for="view">תצוגה:</label>
 <select name="view" id="view">
+  <option value="">תצוגה</option>
   <option value="default" <?= ($view === 'default' ? 'selected' : '') ?>>🔤 רגילה</option>
   <option value="grid" <?= ($view === 'grid' ? 'selected' : '') ?>>🧱 Grid</option>
   <option value="list" <?= ($view === 'list' ? 'selected' : '') ?>>📋 List</option>
@@ -144,7 +151,7 @@ $stmt->close();
 </select>
 
 <!-- מספר תוצאות -->
-<div style="margin:10px 0;">
+<span style="margin:10px 0;">
   <label for="limit">🔢 תוצאות לעמוד:</label>
   <select name="limit" id="limit">
     <?php
@@ -154,23 +161,43 @@ $stmt->close();
     }
     ?>
   </select>
-</div>
+</span>
 
-  <select name="search_mode">
-    <option value="or" <?= $search_mode == 'or' ? 'selected' : '' ?>>🔎 OR</option>
-    <option value="and" <?= $search_mode == 'and' ? 'selected' : '' ?>>🔍 AND</option>
-  </select>
-  <br><br>
-
-
-  <?php include 'flags.php'; ?>
+<label><strong>🔧 מצב חיפוש בין תנאים:</strong></label>
+<label>
+  <input type="radio" name="search_mode" value="or" <?= $search_mode == 'or' ? 'checked' : '' ?>>
+  OR — לפחות תנאי אחד חייב להתקיים
+</label> | 
+<label>
+  <input type="radio" name="search_mode" value="and" <?= $search_mode == 'and' ? 'checked' : '' ?>>
+  AND — כל התנאים חייבים להתקיים
+</label><br><br>
 
   <!-- ✅ תיבות סימון -->
   <label><input type="checkbox" name="is_dubbed" value="1" <?= isset($_GET['is_dubbed']) ? 'checked' : '' ?>> מדובב</label>
   <label><input type="checkbox" name="is_netflix_exclusive" value="1" <?= isset($_GET['is_netflix_exclusive']) ? 'checked' : '' ?>> בלעדי לנטפליקס</label>
-  <label><input type="checkbox" name="is_foreign_language" value="1" <?= isset($_GET['is_foreign_language']) ? 'checked' : '' ?>> שפה זרה</label>
+  <label><input type="checkbox" id="is_foreign_language" name="is_foreign_language" value="1" <?= isset($_GET['is_foreign_language']) ? 'checked' : '' ?>>
+ שפה זרה</label>
   <label><input type="checkbox" name="missing_translation" value="1" <?= isset($_GET['missing_translation']) ? 'checked' : '' ?>> חסר תרגום</label><br><br>
 
+
+<div id="languageMenu">
+  <?php include 'flags.php'; ?>
+</div>
   <button type="submit">📥 סנן</button> <a href="home.php">🔄 איפוס</a>
 </form>
 
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const checkbox = document.getElementById('is_foreign_language');
+  const menu = document.getElementById('languageMenu');
+
+  function toggleFlags() {
+    if (!checkbox || !menu) return;
+    menu.style.display = checkbox.checked ? 'block' : 'none';
+  }
+
+  toggleFlags();
+  checkbox.addEventListener('change', toggleFlags);
+});
+</script>

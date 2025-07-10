@@ -1,339 +1,264 @@
-<?php include 'header.php'; ?>
-
 <?php
-require_once 'imdb.class.php';
+require_once 'header.php';
 require_once 'functions.php';
+require_once 'imdb.class.php';
 
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
+$conn = new mysqli('localhost', 'root', '123456', 'media');
+if ($conn->connect_error) die("Connection failed");
 
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+$message = '';
+$poster_id = 0;
 
-// 🎬 הוספת פוסטר
-if ($_SERVER["REQUEST_METHOD"] == "POST" 
-    && !isset($_POST['add_category']) 
-    && !isset($_POST['delete_category'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $title_en         = $_POST['title_en'] ?? '';
+  $title_he         = $_POST['title_he'] ?? '';
+  $year             = $_POST['year'] ?? '';
+  $lang_code        = $_POST['lang_code'] ?? (count($_POST['languages'] ?? []) === 1 ? $_POST['languages'][0] : 'en');
+  $imdb_id          = $_POST['imdb_id'] ?? '';
+  $imdb_rating      = $_POST['imdb_rating'] ?? '';
+  $imdb_link        = $_POST['imdb_link'] ?? '';
+  $image_url        = $_POST['image_url'] ?? '';
+  $plot             = $_POST['plot'] ?? '';
+  $type             = $_POST['type'] ?? 'movie';
+  $tvdb_id          = $_POST['tvdb_id'] ?? '';
+  $genre            = $_POST['genre'] ?? '';
+  $actors           = $_POST['actors'] ?? '';
+  $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
+  $has_subtitles    = isset($_POST['has_subtitles']) ? 1 : 0;
+  $is_dubbed        = isset($_POST['is_dubbed']) ? 1 : 0;
+  $metacritic_score = $_POST['metacritic_score'] ?? '';
+  $rt_score         = $_POST['rt_score'] ?? '';
+  $metacritic_link  = $_POST['metacritic_link'] ?? '';
+  $rt_link          = $_POST['rt_link'] ?? '';
+  $languages_posted = $_POST['languages'] ?? [];
+  $categories       = $_POST['categories'] ?? [];
 
-    $title_en         = $_POST['title_en'] ?? '';
-    $title_he         = $_POST['title_he'] ?? '';
-    $year             = $_POST['year'] ?? '';
-    $imdb_rating      = $_POST['imdb_rating'] ?? '';
-    $imdb_link        = $_POST['imdb_link'] ?? '';
-    $image_url        = $_POST['image_url'] ?? '';
-    $plot             = $_POST['plot'] ?? '';
-    $type             = $_POST['type'] ?? 'movie';
-    $tvdb_id          = $_POST['tvdb_id'] ?? '';
-    $genre            = $_POST['genre'] ?? '';
-    $actors           = $_POST['actors'] ?? '';
-    $youtube_trailer  = $_POST['youtube_trailer'] ?? '';
-    
-
-}
-$youtube_trailer  = $_POST['youtube_trailer'] ?? '';
-if ($youtube_trailer === '0') {
-  $youtube_trailer = '';
-}
-/*
-echo "<pre>טריילר שנשלח: " . htmlspecialchars($youtube_trailer) . "</pre>";
-*/
-    // בדוק אם IMDb כבר קיים במסד
-$check = $conn->prepare("SELECT id FROM posters WHERE imdb_link = ?");
-$check->bind_param("s", $imdb_link);
-/*
-
-$check = $conn->prepare("SELECT id FROM posters WHERE imdb_id = ?");
-$check->bind_param("s", $imdb_id);
-*/
-
-
-$check->execute();
-$check->store_result();
-
-if ($check->num_rows > 0) {
-    echo "<p style='color:orange; text-align:center;'>⚠️ פוסטר עם IMDb הזה כבר קיים</p>";
-return;
-
-  } else {
-    // שמירה כרגיל
-    $stmt = $conn->prepare("INSERT INTO posters 
-    (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type, tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    
-$has_subtitles = isset($_POST['has_subtitles']) ? 1 : 0;
-$is_dubbed     = isset($_POST['is_dubbed'])     ? 1 : 0;
-$lang_code     = $_POST['lang_code'] ?? '';
-
-    $stmt->bind_param("sssssssssssiiis",
-      $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
-      $type, $tvdb_id, $genre, $actors, $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code);
-
-      
-    $stmt->execute();
-    $poster_id = $conn->insert_id;
-    $stmt->close();
-
-    echo "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה!</p>";
-}
-
-
-$check->close();
-
-  include 'flags.php'; 
-
-    // 🏷️ שמירת תגיות
-    if (!empty($_POST['categories'])) {
-        foreach ($_POST['categories'] as $cat_id) {
-            $stmt = $conn->prepare("INSERT INTO poster_categories (poster_id, category_id) VALUES (?, ?)");
-            $stmt->bind_param("ii", $poster_id, intval($cat_id));
-            $stmt->execute();
-            $stmt->close();
-        }
-    }
-    if ($type === 'series' && !empty($tvdb_id)) {
-        echo "<div style='text-align:center;'>
-          🌐 <a href='https://thetvdb.com/series/" . htmlspecialchars($tvdb_id) . "' target='_blank'>TVDB</a>
-        </div>";
-    }
-
-
-
-?>
-<?php
-// ➕ הוספת תגית
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_category']) && !empty($_POST['new_category'])) {
-    $name = trim($_POST['new_category']);
-    $stmt = $conn->prepare("INSERT INTO categories (name) VALUES (?)");
-    $stmt->bind_param("s", $name);
-    $stmt->execute();
-    $stmt->close();
-}
-
-// 🗑️ מחיקת תגית
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_category']) && !empty($_POST['delete_category_id'])) {
-    $id = intval($_POST['delete_category_id']);
-    $conn->query("DELETE FROM poster_categories WHERE category_id = $id");
-    $conn->query("DELETE FROM categories WHERE id = $id");
-}
-
-$genre           = $_POST['genre'] ?? '';
-$actors          = $_POST['actors'] ?? '';
-$youtube_trailer = $_POST['youtube_trailer'] ?? '';
-
-$is_dubbed = isset($_POST['is_dubbed']) ? 1 : 0;
-
-$lang_code = $_POST['lang_code'] ?? '';
-
-?>
-
-<script>
-  function checkIfExists(imdbId) {
-  return fetch('check_imdb.php?imdb=' + imdbId)
-    .then(res => res.text())
-    .then(result => result === 'true');
-}
-
-document.querySelector('form').addEventListener('submit', async function(e) {
-  const imdbUrl = document.getElementById('imdbUrl').value.trim();
-  const match = imdbUrl.match(/tt\d+/);
-  if (!match) return;
-
-  const imdbId = match[0];
-  const exists = await checkIfExists(imdbId);
-
-  if (exists) {
-    e.preventDefault();
-    alert("⚠️ פוסטר עם IMDb הזה כבר קיים!");
+  if (empty($imdb_id) && preg_match('/tt\d+/', $imdb_link, $m)) {
+    $imdb_id = $m[0];
   }
-});
-</script>
+
+  $check = $conn->prepare("SELECT id FROM posters WHERE imdb_link = ?");
+  $check->bind_param("s", $imdb_link);
+  $check->execute();
+  $check->store_result();
+
+  if ($check->num_rows > 0) {
+    $message = "<p style='color:orange; text-align:center;'>⚠️ הפוסטר כבר קיים במסד</p>";
+  } else {
+    $data = compact(
+      'title_en', 'title_he', 'year', 'imdb_rating', 'imdb_link', 'image_url', 'plot', 'type',
+      'tvdb_id', 'genre', 'actors', 'youtube_trailer', 'has_subtitles', 'is_dubbed', 'lang_code',
+      'imdb_id', 'metacritic_score', 'rt_score', 'metacritic_link', 'rt_link'
+    );
+
+    $stmt = $conn->prepare("INSERT INTO posters 
+    (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type,
+     tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code,
+     imdb_id, metacritic_score, rt_score, metacritic_link, rt_link)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    if (!$stmt) {
+      $message = "<p style='color:red;'>❌ שגיאה ב־prepare: " . $conn->error . "</p>";
+    } else {
+      $stmt->bind_param("sssssssssssiisssssss",
+        $title_en, $title_he, $year, $imdb_rating, $imdb_link, $image_url, $plot,
+        $type, $tvdb_id, $genre, $actors, $youtube_trailer,
+        $has_subtitles, $is_dubbed, $lang_code,
+        $imdb_id, $metacritic_score, $rt_score, $metacritic_link, $rt_link
+      );
+
+      $stmt->execute();
+
+      if ($stmt->affected_rows > 0) {
+        $poster_id = $conn->insert_id;
+        $message = "<p style='color:green; text-align:center;'>✅ הפוסטר נשמר בהצלחה! (ID: $poster_id)</p>";
+
+        foreach ($languages_posted as $code) {
+          $lang_stmt = $conn->prepare("INSERT INTO poster_languages (poster_id, lang_code) VALUES (?, ?)");
+          $lang_stmt->bind_param("is", $poster_id, $code);
+          $lang_stmt->execute();
+          $lang_stmt->close();
+        }
+
+        foreach ($categories as $cat_id) {
+          $cat_stmt = $conn->prepare("INSERT INTO poster_categories (poster_id, category_id) VALUES (?, ?)");
+          $cat_stmt->bind_param("ii", $poster_id, intval($cat_id));
+          $cat_stmt->execute();
+          $cat_stmt->close();
+        }
+      } else {
+        $message = "<p style='color:red; text-align:center;'>❌ שמירת הפוסטר נכשלה: " . $stmt->error . "</p>";
+      }
+
+      $stmt->close();
+    }
+  }
+
+  $check->close();
+}
+?>
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>הוספת פוסטר</title>
-  <link rel="stylesheet" href="style.css">
-  
- <script>
-function fetchFromIMDb() {
-  const url = document.getElementById('imdbUrl').value.trim();
-  const match = url.match(/tt\d+/);
-  if (!match) return;
+  <title>📥 הוספת פוסטר</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    form { max-width:600px; margin:auto; text-align:right; direction:rtl; }
+    input, textarea, select { width:100%; margin-bottom:10px; padding:6px; }
+    .language-cell { display:flex; gap:6px; align-items:center; font-size:13px; }
+    .language-cell img { height:16px; }
+  </style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const imdbInput = document.querySelector("[name='imdb_link']");
+  const imageUrlInput = document.querySelector("[name='image_url']");
+  const posterPreview = document.getElementById("posterPreview");
 
-  const imdbId = match[0];
-  const apiKey = '1ae9a12e'; // החלף למפתח תקף אם צריך
+  function updatePosterPreview(url) {
+    if (url) {
+      posterPreview.innerHTML = `
+        <p style="margin-bottom:8px; font-weight:bold;">🖼️ תצוגה מקדימה:</p>
+        <img src="${url}" style="max-width:100%; border-radius:6px;">
+      `;
+      posterPreview.style.display = "block";
+    } else {
+      posterPreview.innerHTML = '';
+      posterPreview.style.display = "none";
+    }
+  }
 
-  fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.Response === "True") {
-        document.getElementById('title_en').value = data.Title || '';
-        document.getElementById('year').value = data.Year || '';
-        document.getElementById('imdb_rating').value = data.imdbRating || '';
-        document.getElementById('image_url').value = data.Poster || '';
-        document.getElementById('plot').value = data.Plot || '';
-        document.getElementById('imdb_link').value = `https://www.imdb.com/title/${imdbId}/`;
-document.getElementById('genre').value = data.Genre || '';
-document.getElementById('actors').value = data.Actors || '';
+  function fetchDetails(imdbId) {
+    const apiKey = '1ae9a12e';
+    fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.Response === "True") {
+          document.querySelector("[name='title_en']").value     = data.Title || '';
+          document.querySelector("[name='year']").value         = data.Year || '';
+          document.querySelector("[name='imdb_rating']").value  = data.imdbRating || '';
+          document.querySelector("[name='image_url']").value    = data.Poster || '';
+          document.querySelector("[name='plot']").value         = data.Plot || '';
+          document.querySelector("[name='genre']").value        = data.Genre || '';
+          document.querySelector("[name='actors']").value       = data.Actors || '';
+          document.querySelector("[name='imdb_id']").value      = imdbId;
 
-
-
-        // תצוגה חיה
-        const image = document.getElementById('previewImage');
-        const plot = document.getElementById('previewPlot');
-
-        if (data.Poster) {
-          image.src = data.Poster;
-          image.style.display = 'block';
+          updatePosterPreview(data.Poster || '');
         } else {
-          image.style.display = 'none';
+          alert("❌ IMDb לא החזיר תוצאה תקפה");
         }
+      })
+      .catch(() => alert("❌ שגיאה בחיבור ל־OMDb"));
+  }
 
-        plot.textContent = data.Plot || '';
-      } else {
-        alert("לא נמצאו נתונים עבור IMDb ID זה");
-      }
-    })
-    .catch(err => {
-      console.error("שגיאה ב־OMDb API:", err);
-      alert("שגיאה בשליפת נתונים");
-    });
-}
+  // שליפה אוטומטית אם יש IMDb בקישור בעת טעינת הדף
+  const imdbMatch = imdbInput.value.trim().match(/tt\d+/);
+  if (imdbMatch) fetchDetails(imdbMatch[0]);
 
-// הפעלה אוטומטית
-document.addEventListener("DOMContentLoaded", () => {
-  const imdbField = document.getElementById('imdbUrl');
-  imdbField.addEventListener('change', fetchFromIMDb);
-  imdbField.addEventListener('blur', fetchFromIMDb);
+  // תצוגה מקדימה בעת שינוי השדה ידנית
+  imageUrlInput.addEventListener("input", () => updatePosterPreview(imageUrlInput.value.trim()));
+  updatePosterPreview(imageUrlInput.value.trim());
+
+  // פונקציה בלחיצה ידנית
+  window.fetchFromIMDb = function () {
+    const match = imdbInput.value.trim().match(/tt\d+/);
+    if (!match) {
+      alert("❌ קישור IMDb לא תקף");
+      return;
+    }
+    fetchDetails(match[0]);
+  };
 });
 </script>
 
 
 </head>
+
 <body>
-  <h2 style="text-align:center;">📥 הוספת פוסטר חדש</h2>
+<h2>📥 הוספת פוסטר חדש</h2>
+<?= $message ?>
+
+<form method="post" action="add.php">
+  <label>🔗 קישור ל־IMDb:</label>
+  <input type="text" name="imdb_link" value="<?= htmlspecialchars($imdb_link ?? '') ?>">
+<!-- ⬇️ מחזירים את הכפתור הזה -->
+<button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button><br>
 
 
-  <form method="post" action="add.php" style="max-width:500px; margin:auto;">
+  <label>כותרת באנגלית:</label><input type="text" name="title_en">
+  <label>כותרת בעברית:</label><input type="text" name="title_he">
+  <label>🗓️ שנה:</label><input type="text" name="year">
+  <label>🎯 דירוג IMDb:</label><input type="text" name="imdb_rating">
+  <label>🖼️ כתובת תמונה:</label><input type="text" name="image_url">
 
 
+<div id="posterPreview" style="margin:10px 0; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f8f8f8; display:none;"></div>
 
-    <label>🔗 קישור ל־IMDb:</label><br>
-    <input type="text" id="imdbUrl" style="width:100%;"><br>
-    <button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button><br><br>
+  <label>📘 תקציר:</label><textarea name="plot" rows="3"></textarea>
+  <label>🎭 ז'אנר:</label><input type="text" name="genre">
+  <label>👥 שחקנים:</label><input type="text" name="actors">
+  <label>🔗 TVDB ID:</label><input type="text" name="tvdb_id">
+  <label>🎞️ טריילר YouTube:</label><input type="text" name="youtube_trailer">
+  <label>סוג:</label>
+  <select name="type">
+    <option value="movie">סרט</option>
+    <option value="series">סדרה</option>
+  </select>
+  <label>📝 כתוביות:</label><input type="checkbox" name="has_subtitles" value="1">
+  <label>🎙️ דיבוב:</label><input type="checkbox" name="is_dubbed" value="1">
+  <label>📊 Metacritic:</label><input type="text" name="metacritic_score">
+  <label>🍅 Rotten Tomatoes:</label><input type="text" name="rt_score">
+  <label>🔗 קישור Metacritic:</label><input type="text" name="metacritic_link">
+  <label>🔗 קישור RT:</label><input type="text" name="rt_link">
+  <label>🔤 IMDb ID:</label><input type="text" name="imdb_id">
 
-    <label>סוג הפוסטר:</label><br>
-<select name="type" required>
-  <option value="movie">🎬 סרט</option>
-  <option value="series">📺 סדרה</option>
-</select><br>
-
-<label>🌐 שפת מקור:</label><br>
-<select name="lang_code">
-  <option value="">לא ידוע</option>
-  <option value="he">🇮🇱 עברית</option>
-  <option value="en">🇬🇧 אנגלית</option>
-  <option value="fr">🇫🇷 צרפתית</option>
-  <option value="ja">🇯🇵 יפנית</option>
-  <option value="de">🇩🇪 גרמנית</option>
-  <option value="es">🇪🇸 ספרדית</option>
-</select><br>
-
-<label>🔗 TVDB ID (לסדרות בלבד):</label><br>
-<input type="text" name="tvdb_id"><br>
-
-    <label>📌 כותרת באנגלית:</label><br>
-    <input type="text" id="title_en" name="title_en" required><br>
-    <label>כותרת בעברית:</label><br>
-    <input type="text" id="title_he" name="title_he"><br>
-    <label>🗓️ שנה:</label><br>
-    <input type="text" id="year" name="year"><br>
-    <label>📊 דירוג IMDb:</label><br>
-    <input type="text" id="imdb_rating" name="imdb_rating"><br>
-    <label>קישור ל-IMDb:</label><br>
-    <input type="text" id="imdb_link" name="imdb_link"><br>
-    <label>🎞️ קישור לטריילר YouTube:</label><br>
-    <br>
-    <input type="text" name="youtube_trailer" id="youtube_trailer">
-   
-    <label>🖼️ כתובת תמונה:</label><br>
-    <input type="text" id="image_url" name="image_url" required><br>
-
-    <label>📝 יש כתוביות?</label><br>
-<input type="checkbox" name="has_subtitles" value="1"><br>
-
-<label>      <span>
-        <img src="hebdub.svg" class="bookmark">
-    </span> מדובב?</label><br>
-<input type="checkbox" name="is_dubbed" value="1"><br>
-
-
-   
-    <label>📘 תקציר:</label><br>
-    <textarea id="plot" name="plot" rows="4" cols="50"></textarea><br>
-    <label>🎭 ז'אנר:</label><br>
-<input type="text" id="genre" name="genre"><br>
-
-<label>👥 שחקנים:</label><br>
-<input type="text" id="actors" name="actors"><br>
-
-
-    <div id="preview" style="margin-top:20px; text-align:center;">
-  <img id="previewImage" src="" alt="" style="max-width:250px; display:none; border-radius:6px;"><br>
-  <div id="previewPlot" style="margin-top:10px; font-size:14px; line-height:1.6;"></div>
+<div style="text-align:left;">
+  <?php include 'flags.php'; ?>
 </div>
-
-
-    <label>🏷️ קטגוריות:</label><br>
-    <select name="categories[]" multiple style="width:100%;">
-      <?php
-      $cat_result = $conn->query("SELECT * FROM categories");
-      while ($cat = $cat_result->fetch_assoc()):
-      ?>
-        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
-      <?php endwhile; ?>
-    </select><br><br>
-
-    <button type="submit">💾 שמור</button>
-  </form>
-<hr>
-<h4 align="center">🔧 ניהול תגיות</h4>
-
-<!-- הוספת תגית חדשה -->
-<form method="post" style="margin-bottom:10px;" align="center">
-  <input type="text" name="new_category" placeholder="שם תגית חדשה" required>
-  <button type="submit" name="add_category">➕ הוסף</button>
+  <button type="submit">💾 שמור פוסטר</button>
 </form>
 
-<!-- מחיקת תגיות קיימות -->
-<ul style="list-style:none; padding:0;" align="center">
-  <?php
-  $cat_list = $conn->query("SELECT * FROM categories");
-  while ($cat = $cat_list->fetch_assoc()):
-  ?>
-    <li>
-      <?= htmlspecialchars($cat['name']) ?>
-      <form method="post" style="display:inline;">
-        <input type="hidden" name="delete_category_id" value="<?= $cat['id'] ?>">
-        <button type="submit" name="delete_category" onclick="return confirm('למחוק את התגית?')">🗑️</button>
-      </form>
-    </li>
-  <?php endwhile; ?>
-</ul>
-
-  <div style="text-align:center;margin-top:20px;">
-    <a href="index.php">⬅ חזרה לרשימת הפוסטרים</a>
+<?php if ($poster_id > 0): ?>
+  <div style="margin:30px auto; padding:15px; border:1px solid #ccc; border-radius:6px; max-width:500px; text-align:right;">
+    <h3>📌 פרטי הפוסטר שנשמר:</h3>
+    <p><strong>🎬 כותרת:</strong> <?= htmlspecialchars($title_he ?: $title_en) ?></p>
+    <p><strong>🗓️ שנה:</strong> <?= htmlspecialchars($year) ?></p>
+    <p><strong>🎯 IMDb:</strong> <?= htmlspecialchars($imdb_rating) ?></p>
+      <?php foreach ($languages as $lang) {
+        if ($lang['code'] === $lang_code) {
+          echo "<img src='{$lang['flag']}' alt='{$lang['label']}' style='height:16px; vertical-align:middle;'>";
+          break;
+        }
+      } ?>
+    </p>
+    <?php if ($image_url): ?>
+      <img src="<?= htmlspecialchars($image_url) ?>" style="max-width:100%; border-radius:6px;">
+    <?php endif; ?>
+    <?php if ($plot): ?>
+      <p style="margin-top:10px; font-size:14px;">📘 <?= htmlspecialchars($plot) ?></p>
+    <?php endif; ?>
+    <a href="add.php" style="color:blue;">↩️ הוסף פוסטר נוסף</a>
   </div>
+<?php endif; ?>
+<?php if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($data)): ?>
+  <div style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin:30px auto; max-width:600px; text-align:right;">
+    <h3>📊 בדיקת משתנים לפני שמירה:</h3>
+    <p><strong>🔢 סה"כ משתנים:</strong> <?= count($data) ?></p>
+    <ul>
+      <?php foreach ($data as $key => $val): ?>
+        <?php
+          $out = is_array($val)
+            ? '[ARRAY]'
+            : (trim($val) === ''
+              ? '<span style="color:red;">[ריק]</span>'
+              : htmlspecialchars($val));
+        ?>
+        <li><strong><?= $key ?></strong>: <?= $out ?></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+<?php endif; ?>
+
+<?php include 'footer.php'; ?>
 </body>
 </html>
-<?php include 'footer.php'; ?>
-
-<?php
-/*
-echo "<pre>tvdb_id: $tvdb_id</pre>";
-*/
-?>

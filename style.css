@@ -50,7 +50,7 @@ color:black !important;
   line-height: 1.0;
   display: inline-block;
 }
-
+.center {text-align: center!important;}
     @media (max-width: 600px) {
       .poster-wall {
         padding: 10px;
@@ -213,4 +213,8 @@ display: flex
 .flag-inline img {
   height: 16px;
   margin-left: 6px;
+}
+#languageMenu {
+  display: none;
+  transition: opacity 0.3s ease;
 }
