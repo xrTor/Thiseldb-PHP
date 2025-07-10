@@ -30,7 +30,7 @@ $tags = $conn->query("
   <div class="box">
  <span><a href="movies.php">🎬 סרטים: <strong><?= $count_movies ?></a></strong></span> |
   <span><a href="series.php">📺 סדרות: <strong><?= $count_series ?></a></strong></span> |
-  <span><a href="https://github.com/xrTor/Thiseldb-PHP">קוד מקור</span><br>
+  <span><a href="https://github.com/xrTor/Thiseldb-PHP" target="_blank">קוד מקור</span><br>
  </div><br><br>
 </footer>
 </body>

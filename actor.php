@@ -52,3 +52,5 @@ $result = $conn->query("SELECT * FROM posters WHERE actors LIKE '%$actor%'");
 </html>
 
 <?php $conn->close(); ?>
+<?php
+include 'footer.php';?>
