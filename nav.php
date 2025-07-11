@@ -33,7 +33,9 @@ echo "<!-- current page: $current -->";
 
     'add.php' => '➕ הוסף פוסטר חדש',
     'manage_categories.php' => '🏷️ ניהול תגיות',
-    'export.php' => '📤 ייצוא לCSV'
+    'export.php' => '📤 ייצוא לCSV',
+    'admin_reports.php' => 'ניהול דיווחים',
+    
   ];
 
     foreach ($pages as $file => $label) {
