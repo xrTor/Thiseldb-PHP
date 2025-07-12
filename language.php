@@ -1,5 +1,6 @@
 <?php
 include 'header.php';
+
 $host = 'localhost';
 $db = 'media';
 $user = 'root';
@@ -10,25 +11,36 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$actor = $_GET['name'] ?? '';
-$actor = trim($actor);
+$lang_code = $_GET['lang_code'] ?? '';
+$lang_code = trim($lang_code);
 
-if (empty($actor)) {
-    echo "<p style='text-align:center;'>❌ לא נבחר שחקן</p>";
+if (empty($lang_code)) {
+    echo "<p style='text-align:center;'>❌ לא נבחרה שפה</p>";
     exit;
 }
 
-$result = $conn->query("SELECT * FROM posters WHERE actors LIKE '%$actor%'");
+// שליפת פוסטרים לפי השפה
+$stmt = $conn->prepare("
+  SELECT posters.*
+  FROM posters
+  JOIN poster_languages ON posters.id = poster_languages.poster_id
+  WHERE poster_languages.lang_code = ?
+  ORDER BY posters.year DESC
+");
+$stmt->bind_param("s", $lang_code);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>פוסטרים עם <?= htmlspecialchars($actor) ?></title>
+  <title>פוסטרים בשפה <?= htmlspecialchars($lang_code) ?></title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2 style="text-align:center;">👥 פוסטרים בכיכובו של: <?= htmlspecialchars($actor) ?></h2>
+  <h2 style="text-align:center;">🎬 פוסטרים בשפה: <?= htmlspecialchars($lang_code) ?></h2>
 
   <?php if ($result->num_rows > 0): ?>
     <div style="display:flex; flex-wrap:wrap; justify-content:center;">
@@ -42,7 +54,7 @@ $result = $conn->query("SELECT * FROM posters WHERE actors LIKE '%$actor%'");
       <?php endwhile; ?>
     </div>
   <?php else: ?>
-    <p style="text-align:center;">😢 לא נמצאו פוסטרים עם <?= htmlspecialchars($actor) ?></p>
+    <p style="text-align:center;">😢 לא נמצאו פוסטרים בשפה <?= htmlspecialchars($lang_code) ?></p>
   <?php endif; ?>
 
   <div style="text-align:center; margin-top:20px;">
@@ -51,6 +63,8 @@ $result = $conn->query("SELECT * FROM posters WHERE actors LIKE '%$actor%'");
 </body>
 </html>
 
-
-<?php $conn->close(); ?>
-<?php include 'footer.php'; ?>
+<?php
+$stmt->close();
+$conn->close();
+include 'footer.php';
+?>

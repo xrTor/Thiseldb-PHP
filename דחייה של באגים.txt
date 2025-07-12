@@ -1,0 +1,3 @@
+1.
+לתקן את החיפוש והפילטר לפי בעמוד home.php
+http://thisel.db/language.php?lang_code=hebrew
