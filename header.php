@@ -6,7 +6,7 @@
   <?php /*?v=2 */?>
   <link rel="stylesheet" href="style.css?v=2">
   <link rel="stylesheet" href="w3.css">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3">
 <link rel="script" href="script.js">
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
 

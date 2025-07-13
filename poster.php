@@ -128,10 +128,12 @@ while ($r = $res->fetch_assoc()) $similar[] = $r;
       max-width:800px; margin:auto;
       background:#fff; padding:20px;
       border-radius:6px; box-shadow:0 0 6px rgba(0,0,0,0.1);
+      
     }
     .poster-image {
       width:200px; float:right; margin-left:20px;
       border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.08);
+      
     }
     .poster-details { overflow:hidden; }
     .tag {
@@ -139,6 +141,10 @@ while ($r = $res->fetch_assoc()) $similar[] = $r;
       display:inline-block; border-radius:12px;
       font-size:13px; text-decoration:none; color:#333;
     }
+    button.like-button {
+  cursor: pointer;
+}
+
   </style>
 </head>
 <body class="rtl">
@@ -151,18 +157,18 @@ while ($r = $res->fetch_assoc()) $similar[] = $r;
   </div>
 
   <form method="post" style="margin-top:30px;">
-  <button type="submit" name="vote" value="like"
+  <button type="submit" name="vote" class="like-button" value="like"
     style="background:<?= $user_vote === 'like' ? '#28a745' : '#ccc' ?>; color:white; padding:10px 16px; border:none; border-radius:6px;">
     ❤️ אהבתי (<?= $likes ?>)
   </button>
 
-  <button type="submit" name="vote" value="dislike"
+  <button type="submit" name="vote" class="like-button" value="dislike"
     style="background:<?= $user_vote === 'dislike' ? '#dc3545' : '#ccc' ?>; color:white; padding:10px 16px; border:none; border-radius:6px; margin-right:10px;">
     💔 לא אהבתי (<?= $dislikes ?>)
   </button>
 
   <?php if ($user_vote): ?>
-    <button type="submit" name="vote" value="remove"
+    <button type="submit" name="vote" class="like-button" value="remove"
       style="background:#666; color:white; padding:10px 16px; border:none; border-radius:6px; margin-right:10px;">
       ❌ בטל הצבעה
     </button>
@@ -189,9 +195,29 @@ while ($r = $res->fetch_assoc()) $similar[] = $r;
       </p>
     <?php endif; ?>
 
-    <p><strong>🗓️ שנה:</strong> <?= htmlspecialchars($row['year']) ?></p>
-    <p><strong>🎞️ סוג:</strong> <?= $row['type'] === 'series' ? 'סדרה' : 'סרט' ?></p>
-    <p><strong>⭐ IMDb:</strong> <?= $row['imdb_rating'] ? htmlspecialchars($row['imdb_rating']) . ' / 10' : 'לא זמין' ?></p>
+ <?php
+switch ($row['type'] ?? '') {
+  case 'series':
+    $type_label = '📺 סדרה';
+    break;
+  case 'movie':
+    $type_label = '🎬 סרט';
+    break;
+  case 'short':
+    $type_label = '🎞️ סרט קצר';
+    break;
+  case 'miniseries':
+    $type_label = '📺 מיני-סדרה';
+    break;
+  default:
+    $type_label = '❓ לא ידוע';
+}
+?>
+
+<p><strong>🗓️ שנה:</strong> <?= htmlspecialchars($row['year']) ?></p>
+<p><strong>🎞️ סוג:</strong> <?= $type_label ?></p>
+<p><strong>⭐ IMDb:</strong> <?= $row['imdb_rating'] ? htmlspecialchars($row['imdb_rating']) . ' / 10' : 'לא זמין' ?></p>
+
     <p><strong>🔤 IMDb ID:</strong> <?= htmlspecialchars($row['imdb_id']) ?></p>
 
     <?php if (!empty($row['tvdb_id'])): ?>

@@ -217,9 +217,28 @@ echo "<div style='margin-top:6px; font-size:16px;'>$lang_icon $features</div>";
       <?php endif; ?></span>
 
 <?php
-$icon = $row['type'] == 'series' ? '📺 סדרה' : '🎬 סרט';
+$type = $row['type'] ?? 'movie';
+
+switch ($type) {
+  case 'movie':
+    $icon = '🎬 סרט';
+    break;
+  case 'series':
+    $icon = '📺 סדרה';
+    break;
+  case 'short':
+    $icon = '🎞️ סרט קצר';
+    break;
+  case 'miniseries':
+    $icon = '📺 מיני-סדרה';
+    break;
+  default:
+    $icon = '❓ לא ידוע';
+}
+
 echo "<div style='font-size:12px; color:#555;'>$icon</div>";
 ?>
+
 
 
 <!--

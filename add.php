@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $cat_stmt->execute();
         $cat_stmt->close();
       }
-      $message = "✅ הפוסטר נשמר בהצלחה (ID: $poster_id)";
+      $message = "✅ הפוסטר נשמר בהצלחה (ID: $poster_id) — <a href='poster.php?id=$poster_id'>לצפייה בפוסטר</a>";
     } else {
       $message = "❌ שמירת הפוסטר נכשלה: " . $stmt->error;
     }
@@ -188,10 +188,13 @@ $conn->close();
   <label>🎞️ טריילר YouTube:</label><input type="text" name="youtube_trailer">
   <div id="trailerPreview"></div>
   <label>סוג:</label>
-  <select name="type">
-    <option value="movie">סרט</option>
-    <option value="series">סדרה</option>
-  </select>
+<select name="type">
+  <option value="movie">🎬 סרט</option>
+  <option value="series">📺 סדרה</option>
+  <option value="short">🎞️ סרט קצר</option>
+  <option value="miniseries">📺 מיני-סדרה</option>
+</select>
+
   <label>📝 כתוביות:</label><input type="checkbox" name="has_subtitles" value="1">
   <label>🎙️ דיבוב:</label><input type="checkbox" name="is_dubbed" value="1">
   <label>📊 Metacritic:</label><input type="text" name="metacritic_score">
