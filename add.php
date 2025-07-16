@@ -1,14 +1,12 @@
 <?php
 require_once 'header.php';
 require_once 'functions.php';
-require_once 'imdb.class.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // חיבור למסד
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+ require_once 'server.php';
 
 $message = '';
 $poster_id = 0;

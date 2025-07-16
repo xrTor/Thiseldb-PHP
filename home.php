@@ -20,7 +20,7 @@ $end_item = $offset + count($rows);
       background: #f0f0f0;
       direction: rtl;
       margin: 0;
-      padding: 40px;
+      padding: 10px;
     }
     h1, p { text-align: center; }
     .poster-wall {

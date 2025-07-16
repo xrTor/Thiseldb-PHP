@@ -1,8 +1,6 @@
 <?php
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
+require_once 'server.php';
+ 
 $conn = new mysqli($host, $user, $pass, $db);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

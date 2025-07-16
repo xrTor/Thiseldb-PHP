@@ -1,15 +1,7 @@
 <?php
 include 'header.php';
-
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+ require_once 'server.php';
+ 
 
 $lang_code = $_GET['lang_code'] ?? '';
 $lang_code = trim($lang_code);

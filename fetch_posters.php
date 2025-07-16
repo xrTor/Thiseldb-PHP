@@ -1,9 +1,7 @@
 <?php
 session_start();
-
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
-
+ require_once 'server.php';
+ 
 // הגדרות ומסננים
 $allowed_limits = [5, 10, 20, 50, 100, 250];
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : ($_SESSION['limit'] ?? 20);

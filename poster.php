@@ -14,9 +14,8 @@ function extractYoutubeId($url) {
   return '';
 }
 
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed");
-
+require_once 'server.php';
+ 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $result = $conn->query("SELECT * FROM posters WHERE id = $id");
 if ($result->num_rows == 0) { echo "<p style='text-align:center;'>❌ פוסטר לא נמצא</p>"; exit; }
@@ -114,6 +113,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 $similar = [];
 $res = $conn->query("SELECT p.* FROM poster_similar ps JOIN posters p ON p.id=ps.similar_id WHERE ps.poster_id=$id");
 while ($r = $res->fetch_assoc()) $similar[] = $r;
+
+$collections = [];
+$res = $conn->query("
+  SELECT c.* FROM poster_collections pc
+  JOIN collections c ON c.id = pc.collection_id
+  WHERE pc.poster_id = $id
+");
+while ($r = $res->fetch_assoc()) $collections[] = $r;
+
 ?>
 
 <!DOCTYPE html>
@@ -132,7 +140,7 @@ while ($r = $res->fetch_assoc()) $similar[] = $r;
     }
     .poster-image {
       width:200px; float:right; margin-left:20px;
-      border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.08);
+      border-radius:1px; box-shadow:0 0 4px rgba(0,0,0,0.08);
       
     }
     .poster-details { overflow:hidden; }
@@ -219,6 +227,24 @@ switch ($row['type'] ?? '') {
 <p><strong>⭐ IMDb:</strong> <?= $row['imdb_rating'] ? htmlspecialchars($row['imdb_rating']) . ' / 10' : 'לא זמין' ?></p>
 
     <p><strong>🔤 IMDb ID:</strong> <?= htmlspecialchars($row['imdb_id']) ?></p>
+
+     <!-- 🎞️ טריילר מוטמע -->
+    <?php if ($video_id): ?>
+      <div style="margin-top:30px; text-align:center;">
+        <h3>🎞️ טריילר</h3>
+        <iframe width="100%" height="315"
+          src="https://www.youtube.com/embed/<?= htmlspecialchars($video_id) ?>"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy"></iframe>
+      </div>
+    <?php else: ?>
+      <div style="margin-top:30px; text-align:center; color:#888;">
+        <h3>🎞️ טריילר</h3>
+        <p>אין טריילר זמין כרגע 😢</p>
+      </div>
+    <?php endif; ?>
+    
 
     <?php if (!empty($row['tvdb_id'])): ?>
       <p><strong>🛰️ TVDB:</strong>
@@ -307,22 +333,14 @@ switch ($row['type'] ?? '') {
       </p>
     <?php endif; ?>
 
-    <!-- 🎞️ טריילר מוטמע -->
-    <?php if ($video_id): ?>
-      <div style="margin-top:30px; text-align:center;">
-        <h3>🎞️ טריילר</h3>
-        <iframe width="100%" height="315"
-          src="https://www.youtube.com/embed/<?= htmlspecialchars($video_id) ?>"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen loading="lazy"></iframe>
-      </div>
-    <?php else: ?>
-      <div style="margin-top:30px; text-align:center; color:#888;">
-        <h3>🎞️ טריילר</h3>
-        <p>אין טריילר זמין כרגע 😢</p>
-      </div>
-    <?php endif; ?>
+   
+<?php if (count($collections) > 0): ?>
+  <p><strong>📦 שייך לאוספים:</strong><br>
+    <?php foreach ($collections as $c): ?>
+      <a href="collection.php?id=<?= $c['id'] ?>" class="tag"><?= htmlspecialchars($c['name']) ?></a>
+    <?php endforeach; ?>
+  </p>
+<?php endif; ?>
 
     <!-- 📝 תגיות קהילתיות -->
     <?php
@@ -355,7 +373,7 @@ switch ($row['type'] ?? '') {
           <div style="width:100px; text-align:center;">
             <form method="post">
               <a href="poster.php?id=<?= $sim['id'] ?>">
-                <img src="<?= htmlspecialchars($sim['image_url']) ?>" style="width:100px; border-radius:6px;"><br>
+                <img src="<?= htmlspecialchars($sim['image_url']) ?>" style="width:100px; border-radius:1px;"><br>
                 <small><?= htmlspecialchars($sim['title_en']) ?></small>
               </a><br>
               <button type="submit" name="remove_similar" value="<?= $sim['id'] ?>">🗑️</button>

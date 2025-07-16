@@ -1,15 +1,22 @@
 * {font-family: Arial !important;}
-a { text-decoration: none !important;}
+/* a { text-decoration: none !important;
+} */
+ a {color: #2d89ef !important;text-decoration: none !important}
+a:hover {
+  text-decoration: underline !important;
+}
+
 body {
-    background-image: url("pattern.png") !important;
+  padding:10px !important;
+    background-image: url("images/pattern.png") !important;
       font-family: Arial, sans-serif;
          /* 
       background: #B3B3B3; 
       background-image: url("paper.gif");
       */
     }
-    .line-btn {background-image: url("pattern.png") !important;}
-    .line-btn-up {background-image: url("menu.png") !important;}
+    .line-btn {background-image: url("images/pattern.png") !important;}
+    .line-btn-up {background-image: url("images/menu.png") !important;}
     
 
     .poster-wall {
@@ -218,4 +225,11 @@ display: flex
   display: none;
   transition: opacity 0.3s ease;
 }
+
+.imdb-id a {
+  color: #777 !important;
+  font-size: 12px;
+  text-decoration: none;
+}
+
 

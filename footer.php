@@ -1,8 +1,6 @@
 <?php
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
+ require_once 'server.php';
+ 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
@@ -20,11 +18,14 @@ $tags = $conn->query("
 ");
 ?>
 
+
 <footer style="text-align:center; margin-top:30px; font-size:14px;">
-   <a href="index.html"><img src="logo1.png" style="width:100px" alt="Thiseldb" title:"Thiseldb"></a>
+   <a href="index.html"><img src="images/logo1.png" style="width:100px" alt="Thiseldb" title:"Thiseldb"></a>
    <br> 
    <p>&copy; <?= date("Y")?>
 </p>
+Thisel.db1@gmail.com
+<br><br>
   סטטיסטיקה:
 
   <div class="box">

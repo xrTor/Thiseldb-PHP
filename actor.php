@@ -1,14 +1,5 @@
+<?php require_once 'server.php';?>
 <?php
-include 'header.php';
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 $actor = $_GET['name'] ?? '';
 $actor = trim($actor);

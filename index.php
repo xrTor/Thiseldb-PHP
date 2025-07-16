@@ -1,16 +1,7 @@
+<?php require_once 'server.php';?>
 <?php include 'header.php'; ?>
 
 <?php
-$host = 'localhost';
-$db   = 'media';
-$user = 'root';
-$pass = '123456';
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
-
 // ⬇️ כאן בדיוק!
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $limit = 20;
@@ -69,7 +60,6 @@ if (!empty($_GET['type'])) {
     $params[] = $_GET['type'];
     $types .= 's';
 }
-
 $orderBy = "";
 if (!empty($_GET['sort'])) {
     switch ($_GET['sort']) {
@@ -80,6 +70,12 @@ if (!empty($_GET['sort'])) {
             break;
     }
 }
+
+if (empty($orderBy)) {
+    $orderBy = "ORDER BY id DESC"; // ✅ מיון ברירת מחדל לפי חדש
+}
+
+
 
 $sql = "SELECT * FROM posters";
 if (!empty($where)) {
@@ -116,52 +112,11 @@ if (!empty($_GET['subtitles'])) {
 
 
 
-  <div style="text-align:center; margin: 20px;">
-    <form method="GET" action="index.php">
-      🔍 חיפוש לפי שם:
-      <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-      🗓️ שנה:
-      <input type="text" name="year" value="<?= htmlspecialchars($_GET['year'] ?? '') ?>">
-      📊 דירוג מינימלי:
-      <input type="text" name="min_rating" value="<?= htmlspecialchars($_GET['min_rating'] ?? '') ?>">
-
-      <label>📝 יש כתוביות:</label>
-<input type="checkbox" name="subtitles" value="1" <?= isset($_GET['subtitles']) ? 'checked' : '' ?>>
-
-
-      ⬇️ מיון לפי:
-<select name="type">
-  <option value="">הכל</option>
-  <option value="movie" <?= ($_GET['type'] ?? '') == 'movie' ? 'selected' : '' ?>>🎬 סרטים</option>
-  <option value="series" <?= ($_GET['type'] ?? '') == 'series' ? 'selected' : '' ?>>📺 סדרות</option>
-</select>
-
-      <select name="sort">
-        <option value="">ללא</option>
-        <option value="year_asc" <?= ($_GET['sort'] ?? '') === 'year_asc' ? 'selected' : '' ?>>שנה ↑</option>
-        <option value="year_desc" <?= ($_GET['sort'] ?? '') === 'year_desc' ? 'selected' : '' ?>>שנה ↓</option>
-        <option value="rating_desc" <?= ($_GET['sort'] ?? '') === 'rating_desc' ? 'selected' : '' ?>>דירוג ↓</option>
-      </select>
-      <button type="submit">סנן</button>
-      <a href="index.php">איפוס 🔄</a>
-    </form>
-  </div>
-
   <?php
   $tags = $conn->query("SELECT * FROM categories");
   $current_tag = $_GET['tag'] ?? null;
   ?>
 
-  <div style="text-align:center; margin: 20px;">
-    <strong>🏷️ סנן לפי תגית:</strong><br>
-    <a href="index.php" style="<?= !$current_tag ? 'font-weight:bold;' : '' ?>">📁 כל התגיות</a>
-    <?php while ($tag = $tags->fetch_assoc()): ?>
-      | <a href="index.php?tag=<?= $tag['id'] ?>"
-           style="<?= $current_tag == $tag['id'] ? 'font-weight:bold; text-decoration:underline;' : '' ?>">
-          <?= htmlspecialchars($tag['name']) ?>
-        </a>
-    <?php endwhile; ?>
-  </div>
 
   <div class="poster-wall">
     <?php if (empty($rows)): ?>
@@ -195,7 +150,7 @@ if (!empty($_GET['subtitles'])) {
 <?php
 // סמל לפי שפת מקור
 $lang_icons = [
-  'en' => '🇬🇧', 'he' => '🇮🇱', 'fr' => '🇫🇷',
+  'en' => '', 'he' => '🇮🇱', 'fr' => '🇫🇷',
   'es' => '🇪🇸', 'ja' => '🇯🇵', 'de' => '🇩🇪'
 ];
 $lang = $row['lang_code'] ?? '';
@@ -248,22 +203,6 @@ echo "<div style='font-size:12px; color:#555;'>$icon</div>";
     
 -->
 
-    <!-- תגיות -->
-    <div class="poster-tags rtl">
-      🏷️ תגיות:
-      <?php
-      $cat_result = $conn->query("SELECT c.id, c.name FROM categories c
-        JOIN poster_categories pc ON c.id = pc.category_id
-        WHERE pc.poster_id = $poster_id");
-      if ($cat_result->num_rows > 0) {
-        while ($c = $cat_result->fetch_assoc()) {
-          echo "<a href='index.php?tag={$c['id']}' class='tag-link'>" . htmlspecialchars($c['name']) . "</a> ";
-        }
-      } else {
-        echo "<span style='color:#999;'>אין תגיות</span>";
-      }
-      ?>
-    </div>
 
     <!-- ✏️🗑️ פעולות בתחתית -->
     <div class="poster-actions rtl" style="margin-top:10px; font-size:13px; text-align:center;">

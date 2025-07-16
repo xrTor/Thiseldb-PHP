@@ -10,14 +10,15 @@ echo "<!-- current page: $current -->";
   $pages = [
 
     'index.php' => 'עמוד ראשי',
-    'home.php' => 'בית',
-    'movies.php' => '🎬 סרטים',
-    'series.php' => '📺 סדרות',
-    'random.php' => '📊 סרט רנדומלי',
+    'home.php' => 'חיפוש',
+    //'movies.php' => '🎬 סרטים',
+    //'series.php' => '📺 סדרות', 
+    'random.php' => '🎲 סרט רנדומלי',
+    'collections.php' => 'אוספים',
     'top.php' => '🏆 TOP 10',
-    'dashboard.php' => '📊 Dashboard',
      'stats.php' => '📈 סטטיסטיקה',
      'contact.php' => 'צור קשר',
+     'about.php' => 'אודות',
   ];
 
     foreach ($pages as $file => $label) {
@@ -32,7 +33,6 @@ echo "<!-- current page: $current -->";
   $pages = [
 
     'add.php' => '➕ הוסף פוסטר חדש',
-    'manage_categories.php' => '🏷️ ניהול תגיות',
     'export.php' => '📤 ייצוא לCSV',
     'panel.php' => 'פאנל ניהול',
     

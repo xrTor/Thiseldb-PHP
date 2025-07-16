@@ -1,0 +1,28 @@
+imdb.class.php
+✅ כוללת קובץ imdb.class.php עם עשרות מתודות שימושיות
+https://github.com/FabianBeiner/PHP-IMDB-Grabber
+
+collection.php
+מציג אך ורק אוסף נבחר לפי ?id=
+
+collections.php
+רשימת האוספים, דף הבית של האוספים
+
+manage_collections.php
+ניהול האוספים
+
+add_to_collection.php
+אחראי על הוספה של פוסטר לתוך אוסף
+
+edit_collection.php
+עריכה של אוסף
+
+create_collection.php
+יצירה של אוסף חדש
+
+
+
+
+
+
+

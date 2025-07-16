@@ -1,9 +1,7 @@
 <?php
+ require_once 'server.php';
 session_start();
 include 'header.php';
-
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 // הגדרות תצוגה ודפדוף
 $allowed_limits = [5, 10, 20, 50, 100, 250];
@@ -64,7 +62,7 @@ if (!empty($_GET['is_foreign_language']))  $where[] = "is_foreign_language = 1";
 if (!empty($_GET['missing_translation']))  $where[] = "has_translation = 0";
 
 // מיון
-$orderBy = "";
+$orderBy = "ORDER BY id DESC";
 if (!empty($_GET['sort'])) {
   switch ($_GET['sort']) {
     case 'year_asc':    $orderBy = "ORDER BY year ASC"; break;
@@ -115,6 +113,13 @@ $count_stmt->close();
       margin: 4px;
     }
   </style>
+
+
+<div id="language-options" style="display:none; margin-top:10px;">
+  <?php include 'flags.php'; ?>
+</div>
+
+
 </head>
 <body>
 
@@ -133,7 +138,7 @@ $count_stmt->close();
     <option value="movie" <?= $type == 'movie' ? 'selected' : '' ?>>🎬 סרט</option>
     <option value="series" <?= $type == 'series' ? 'selected' : '' ?>>📺 סדרה</option>
     <option value="miniseries" <?= $type == 'miniseries' ? 'selected' : '' ?>>📺 מיני־סדרה</option>
-    <option value="short" <?= $type == 'short' ? 'selected' : '' ?>>🎞️ קצר</option>
+    <option value="short" <?= $type == 'short' ? 'selected' : '' ?>>🎞️סרט קצר</option>
   </select>
 
   <select name="sort">
@@ -167,12 +172,40 @@ $count_stmt->close();
 
   <label><input type="checkbox" name="is_dubbed" value="1" <?= isset($_GET['is_dubbed']) ? 'checked' : '' ?>> מדובב</label>
   <label><input type="checkbox" name="is_netflix_exclusive" value="1" <?= isset($_GET['is_netflix_exclusive']) ? 'checked' : '' ?>> בלעדי לנטפליקס</label>
-  <label><input type="checkbox" name="is_foreign_language" value="1" <?= isset($_GET['is_foreign_language']) ? 'checked' : '' ?>> שפה זרה</label>
+ <input type="checkbox" id="is_foreign_language" name="is_foreign_language" value="1"
+    <?= isset($_GET['is_foreign_language']) ? 'checked' : '' ?>>
+  🌍 שפה זרה
+</label>
+
   <label><input type="checkbox" name="missing_translation" value="1" <?= isset($_GET['missing_translation']) ? 'checked' : '' ?>> חסר תרגום</label><br><br>
 
   <button type="submit">📥 סנן</button>
   <a href="home.php">🔄 איפוס</a>
+  <label><div id="languageMenu" style="display:none;">
+  <?php include 'flags.php'; ?>
+</div>
+
+  
+
 </form>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const checkbox = document.getElementById('is_foreign_language');
+  const menu = document.getElementById('languageMenu');
+
+  if (!checkbox || !menu) return;
+
+  function toggleFlags() {
+    menu.style.display = checkbox.checked ? 'block' : 'none';
+  }
+
+  // הצגה אוטומטית אם כבר סומן בעת טעינה
+  toggleFlags();
+
+  // שינוי דינמי בעת לחיצה
+  checkbox.addEventListener('change', toggleFlags);
+});
+</script>
 
 </body>
 </html>

@@ -15,7 +15,7 @@
 <center>
 <a href="index.php">
   <h1 style="text-align:center;">
-  <img src="name.png">
+  <img src="images/name.png">
   </h1>
   <?php include 'nav.php';?>
 

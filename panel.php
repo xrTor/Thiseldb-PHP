@@ -1,9 +1,8 @@
 <?php
 include 'header.php';
 
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("❌ חיבור למסד נכשל: " . $conn->connect_error);
-
+require_once 'server.php';
+ 
 // פונקציה בטוחה לספירה
 function safeCount($conn, $table) {
   $res = $conn->query("SELECT COUNT(*) as c FROM $table");

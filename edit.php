@@ -1,8 +1,6 @@
 <?php
-$host = 'localhost';
-$db = 'media';
-$user = 'root';
-$pass = '123456';
+ require_once 'server.php';
+ 
 $conn = new mysqli($host, $user, $pass, $db);
 
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
@@ -98,3 +96,5 @@ while ($cat = $cat_result->fetch_assoc()):
 
 </body>
 </html>
+
+

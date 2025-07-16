@@ -1,8 +1,8 @@
 <?php include 'header.php'; ?>
 
 <?php
-$conn = new mysqli("localhost", "root", "123456", "media");
-
+require_once 'server.php';
+ 
 // משיכת פוסטר אקראי אחד
 $res = $conn->query("SELECT * FROM posters ORDER BY RAND() LIMIT 1");
 $p = $res->fetch_assoc();

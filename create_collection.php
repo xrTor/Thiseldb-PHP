@@ -1,17 +1,17 @@
-<?php include 'header.php';
-
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed");
+<?php
+include 'header.php';
+require_once 'server.php';
 
 $message = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $name = trim($_POST['name'] ?? '');
   $desc = trim($_POST['description'] ?? '');
+  $img  = trim($_POST['image_url'] ?? '');
 
   if ($name !== '') {
-    $stmt = $conn->prepare("INSERT INTO collections (name, description) VALUES (?, ?)");
-    $stmt->bind_param("ss", $name, $desc);
+    $stmt = $conn->prepare("INSERT INTO collections (name, description, image_url) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $name, $desc, $img);
     $stmt->execute();
     $stmt->close();
     $message = "✅ האוסף נוסף בהצלחה!";
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   </style>
 </head>
 <body>
-
+<br>
 <div class="form-box">
   <h2>➕ יצירת אוסף חדש</h2>
 
@@ -50,8 +50,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <label>📝 תיאור האוסף</label>
     <textarea name="description" rows="4"></textarea>
 
+    <label>🖼️ כתובת לתמונה</label>
+    <input type="text" name="image_url" placeholder="https://example.com/image.jpg">
+
     <button type="submit">📥 שמור אוסף</button>
   </form>
+</div>
+<form method="post">
+  <!-- כל שדות הטופס -->
+</form>
+
+<!-- כפתור חזרה -->
+<div style="text-align:center; margin-top:20px;">
+  <a href="manage_collections.php" style="background:#007bff; color:white; padding:10px 20px; border-radius:6px; text-decoration:none;">
+    ⬅ חזרה לרשימת האוספים
+  </a>
 </div>
 
 </body>

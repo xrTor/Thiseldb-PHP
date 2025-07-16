@@ -1,3 +1,16 @@
 1.
 לתקן את החיפוש והפילטר לפי בעמוד home.php
 http://thisel.db/language.php?lang_code=hebrew
+
+2.
+בעמוד home סינון עפ בלעדי לנטפליקס
+❌ SELECT Error: Unknown column 'is_netflix_exclusive' in 'where clause'
+
+
+
+
+
+
+
+
+

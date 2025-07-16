@@ -1,9 +1,8 @@
 <?php include 'header.php'; ?>
 
 <?php
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
-
+require_once 'server.php';
+ 
 $poster_id = isset($_GET['poster_id']) ? intval($_GET['poster_id']) : 0;
 $success = false;
 

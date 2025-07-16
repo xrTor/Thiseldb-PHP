@@ -1,9 +1,8 @@
 <?php include 'header.php'; ?>
 
 <?php
-$conn = new mysqli('localhost', 'root', '123456', 'media');
-if ($conn->connect_error) die("Connection failed");
-
+ require_once 'server.php';
+ 
 $message = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -27,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <meta charset="UTF-8">
   <title>צור קשר</title>
   <style>
-    body { font-family: Arial; background:#f5f5f5; padding:40px; direction:rtl; }
+    body { font-family: Arial; background:#f5f5f5; padding:10px; direction:rtl; }
     .form-box {
       max-width:600px; margin:auto; background:#fff; padding:20px;
       border-radius:6px; box-shadow:0 0 6px rgba(0,0,0,0.1);
