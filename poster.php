@@ -130,6 +130,7 @@ while ($r = $res->fetch_assoc()) $collections[] = $r;
   <meta charset="UTF-8">
   <title><?= htmlspecialchars($row['title_en']) ?></title>
   <link rel="stylesheet" href="style.css">
+  
   <style>
     body.rtl { direction: rtl; font-family: Arial; background:#f1f1f1; padding:40px; }
     .poster-page {

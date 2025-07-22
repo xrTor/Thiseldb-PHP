@@ -1,5 +1,6 @@
-<?php require_once 'server.php';?>
-<?php
+<?php include 'header.php'; 
+require_once 'server.php';
+
 
 $actor = $_GET['name'] ?? '';
 $actor = trim($actor);
