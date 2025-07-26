@@ -99,20 +99,16 @@ $end_item = $offset + count($rows);
 </head>
 <body>
 
-<h1>🎬 ספריית פוסטרים</h1>
-<p>
-  הצגת <strong><?= $start_item ?>–<?= $end_item ?></strong> מתוך <strong><?= $total_rows ?></strong> פוסטר<?= $total_rows != 1 ? 'ים' : '' ?> —
-  עמוד <strong><?= $page ?></strong> מתוך <strong><?= $total_pages ?></strong>
-</p>
 
 <?php if (empty($rows)): ?>
   <p style="text-align:center;">😢 לא נמצאו תוצאות</p>
 <?php elseif ($view === 'grid'): ?>
   <div class="poster-wall">
     <?php foreach ($rows as $row): ?>
+      <?php $img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png'; ?>
       <div class="poster">
         <a href="poster.php?id=<?= $row['id'] ?>">
-          <img src="<?= htmlspecialchars($row['image_url']) ?>">
+          <img src="<?= htmlspecialchars($img) ?>" alt="פוסטר">
           <strong><?= htmlspecialchars($row['title_en']) ?></strong><br>
           <?= htmlspecialchars($row['title_he']) ?><br>
           🗓 <?= $row['year'] ?>
@@ -125,8 +121,9 @@ $end_item = $offset + count($rows);
 <?php elseif ($view === 'list'): ?>
   <ul class="poster-list">
     <?php foreach ($rows as $row): ?>
+      <?php $img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png'; ?>
       <li>
-        <img src="<?= htmlspecialchars($row['image_url']) ?>">
+        <img src="<?= htmlspecialchars($img) ?>" alt="פוסטר">
         <strong><?= htmlspecialchars($row['title_en']) ?></strong> —
         <?= htmlspecialchars($row['title_he']) ?> (<?= $row['year'] ?>)
         ⭐ <?= $row['imdb_rating'] ?>
@@ -138,9 +135,10 @@ $end_item = $offset + count($rows);
 <?php else: ?>
   <ul class="poster-regular">
     <?php foreach ($rows as $row): ?>
+      <?php $img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png'; ?>
       <li>
         <a href="poster.php?id=<?= $row['id'] ?>">
-          <img src="<?= htmlspecialchars($row['image_url']) ?>">
+          <img src="<?= htmlspecialchars($img) ?>" alt="פוסטר">
           <strong><?= htmlspecialchars($row['title_en']) ?></strong><br>
           <?= htmlspecialchars($row['title_he']) ?><br>
           🗓 <?= $row['year'] ?>
@@ -151,21 +149,34 @@ $end_item = $offset + count($rows);
   </ul>
 <?php endif; ?>
 
-<!-- 📚 דפדוף בין עמודים -->
-<div class="pager">
-  <?php if ($page > 1): ?>
-    <a href="home.php?page=<?= $page - 1 ?>">⬅ הקודם</a>
-  <?php endif; ?>
-  עמוד <?= $page ?> מתוך <?= $total_pages ?>
-  <?php if ($page < $total_pages): ?>
-    <a href="home.php?page=<?= $page + 1 ?>">הבא ➡</a>
-  <?php endif; ?>
-</div>
+<!-- 🧭 ניווט עמודים -->
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    <?php if ($page > 1): ?>
+      <li><a href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>">⬅ הקודם</a></li>
+    <?php endif; ?>
+    <?php
+    $max_links = 5;
+    $start_page = max(1, $page - floor($max_links / 2));
+    $end_page = min($total_pages, $start_page + $max_links - 1);
+    if ($end_page - $start_page < $max_links - 1) {
+      $start_page = max(1, $end_page - $max_links + 1);
+    }
+    for ($i = $start_page; $i <= $end_page; $i++): ?>
+      <li>
+        <?php if ($i == $page): ?>
+          <strong><?= $i ?></strong>
+        <?php else: ?>
+          <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
+        <?php endif; ?>
+      </li>
+    <?php endfor; ?>
+    <?php if ($page < $total_pages): ?>
+      <li><a href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>">הבא ➡</a></li>
+    <?php endif; ?>
+  </ul>
+</nav>
 
-<!-- 🔍 קישור לעריכת סינון -->
-<p style="text-align:center;">
-  <a href="bar.php" style="color:#007bff; text-decoration:none;">🔍 עריכת חיפוש / סינון</a>
-</p>
 
 <?php include 'footer.php'; ?>
 </body>

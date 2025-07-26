@@ -1,12 +1,19 @@
 <?php
 include 'header.php';
 require_once 'server.php';
- 
-// 🔢 סוגים
-$count_series     = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='series'")->fetch_assoc()['c'];
-$count_movies     = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='movie'")->fetch_assoc()['c'];
-$count_miniseries = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='miniseries'")->fetch_assoc()['c'];
-$count_shorts     = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='short'")->fetch_assoc()['c'];
+
+// 🔢 סטטיסטיקה לפי סוג עם אייקונים
+$types_data = [];
+$types_result = $conn->query("SELECT pt.code, pt.label_he, pt.icon, COUNT(p.id) AS total
+  FROM poster_types pt
+  LEFT JOIN posters p ON p.type_id = pt.id
+  GROUP BY pt.code, pt.label_he, pt.icon
+  ORDER BY pt.sort_order ASC");
+
+while ($row = $types_result->fetch_assoc()) {
+    $row['label_with_icon'] = trim($row['icon'] . ' ' . $row['label_he']);
+    $types_data[] = $row;
+}
 
 // ❤️ אהדה
 $count_likes    = $conn->query("SELECT COUNT(*) AS c FROM poster_votes WHERE vote_type='like'")->fetch_assoc()['c'];
@@ -44,11 +51,7 @@ $count_collections = $conn->query("SELECT COUNT(*) AS c FROM collections")->fetc
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial; background:#f4f4f4; padding:10px; text-align:center; direction:rtl; max-width:1000px; margin:auto; }
-    h1, h2, h3 { margin-bottom:20px; }
-    .box {
-      background:#fff; padding:30px; border-radius:10px;
-      box-shadow:0 0 8px rgba(0,0,0,0.1); margin:30px 0;
-    }
+    .box { background:#fff; padding:30px; border-radius:10px; box-shadow:0 0 8px rgba(0,0,0,0.1); margin:30px 0; }
     table { width:100%; border-collapse:collapse; background:white; margin-top:20px; }
     th, td { padding:12px; border-bottom:1px solid #ccc; text-align:right; }
     th { background:#eee; }
@@ -59,7 +62,6 @@ $count_collections = $conn->query("SELECT COUNT(*) AS c FROM collections")->fetc
     .dislike-bar { background:#dc3545; width:<?= $percent_dislikes ?>%; }
     a { color:#007bff; text-decoration:none; }
     a:hover { text-decoration:underline; }
-    
   </style>
 </head>
 <body>
@@ -68,11 +70,15 @@ $count_collections = $conn->query("SELECT COUNT(*) AS c FROM collections")->fetc
 
 <div class="box">
   <h2>🔢 לפי סוג</h2>
-  <p>📺 סדרות: <strong><?= $count_series ?></strong></p>
-  <p>🎬 סרטים: <strong><?= $count_movies ?></strong></p>
-  <p>📺 מיני־סדרות: <strong><?= $count_miniseries ?></strong></p>
-  <p>🎞️ סרטים קצרים: <strong><?= $count_shorts ?></strong></p>
-  <p>📦 אוספים קיימים: <strong><?= $count_collections ?></strong></p>
+  <table>
+    <tr><th>סוג</th><th>מספר פוסטרים</th></tr>
+    <?php foreach ($types_data as $type): ?>
+      <tr>
+        <td><?= htmlspecialchars($type['label_with_icon']) ?></td>
+        <td><?= $type['total'] ?></td>
+      </tr>
+    <?php endforeach; ?>
+  </table>
 </div>
 
 <div class="box">
@@ -84,6 +90,7 @@ $count_collections = $conn->query("SELECT COUNT(*) AS c FROM collections")->fetc
   <div class="bar"><div class="bar-inner dislike-bar"><?= $percent_dislikes ?>%</div></div>
   <p>סה"כ הצבעות: <strong><?= $total_votes ?></strong></p>
 </div>
+
 <div class="box">
   <h2>🔥 עשרת הפוסטרים הכי אהובים</h2>
   <table>
@@ -168,14 +175,20 @@ $count_collections = $conn->query("SELECT COUNT(*) AS c FROM collections")->fetc
     }
   });
 
-  // גרף לפי סוג
+  // גרף לפי סוג עם אייקונים
+  const typeLabels = <?= json_encode(array_column($types_data, 'label_with_icon')) ?>;
+  const typeCounts = <?= json_encode(array_column($types_data, 'total')) ?>;
   new Chart(document.getElementById('typeChart').getContext('2d'), {
     type: 'pie',
     data: {
-      labels: ['🎬 סרטים', '📺 סדרות', '📺 מיני־סדרות', '🎞️ סרטים קצרים'],
+      labels: typeLabels,
       datasets: [{
-        data: [<?= $count_movies ?>, <?= $count_series ?>, <?= $count_miniseries ?>, <?= $count_shorts ?>],
-        backgroundColor: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800']
+        data: typeCounts,
+        backgroundColor: [
+          '#4CAF50', '#2196F3', '#9C27B0', '#FF9800',
+          '#FFC107', '#795548', '#00BCD4', '#607D8B',
+          '#FF5722', '#E91E63'
+        ]
       }]
     },
     options: {

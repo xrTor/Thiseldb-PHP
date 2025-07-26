@@ -1,7 +1,39 @@
+<?php include 'header.php'; 
+require_once 'server.php';
+?>
+
 <?php
-include 'header.php';
- require_once 'server.php';
- 
+require_once 'server.php';
+require_once 'languages.php';
+
+$lang_code = $_GET['lang_code'] ?? '';
+$lang_label = '';
+$lang_flag = '';
+
+foreach ($languages as $lang) {
+  if ($lang['code'] === $lang_code) {
+    $lang_label = $lang['label'];
+    $lang_flag = $lang['flag'];
+    break;
+  }
+}
+
+if ($lang_code === '') {
+  echo "<p>❌ לא נבחרה שפה</p>";
+  exit;
+}
+
+$stmt = $conn->prepare("
+  SELECT p.id, p.title_en, p.title_he, p.image_url, p.year
+  FROM posters p
+  JOIN poster_languages pl ON p.id = pl.poster_id
+  WHERE pl.lang_code = ?
+  ORDER BY p.id DESC
+");
+$stmt->bind_param("s", $lang_code);
+$stmt->execute();
+$result = $stmt->get_result();
+
 
 $lang_code = $_GET['lang_code'] ?? '';
 $lang_code = trim($lang_code);
@@ -25,6 +57,7 @@ $result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
+
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -32,14 +65,22 @@ $result = $stmt->get_result();
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2 style="text-align:center;">🎬 פוסטרים בשפה: <?= htmlspecialchars($lang_code) ?></h2>
+  
+<h1>🌐 פוסטרים בשפה <?= htmlspecialchars($lang_label) ?>
+<?php if ($lang_flag): ?>
+  <img src="<?= htmlspecialchars($lang_flag) ?>" alt="<?= htmlspecialchars($lang_label) ?>" style="height:20px; vertical-align:middle;">
+<?php endif; ?>
+</h1>
 
   <?php if ($result->num_rows > 0): ?>
     <div style="display:flex; flex-wrap:wrap; justify-content:center;">
       <?php while ($row = $result->fetch_assoc()): ?>
+        <?php
+          $img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png';
+        ?>
         <div style="width:200px; margin:10px; text-align:center;">
           <a href="poster.php?id=<?= $row['id'] ?>">
-            <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="Poster" style="width:100%; border-radius:6px;">
+            <img src="<?= htmlspecialchars($img) ?>" alt="Poster" style="width:100%; border-radius:6px;">
             <p><?= htmlspecialchars($row['title_en']) ?></p>
           </a>
         </div>
@@ -55,8 +96,4 @@ $result = $stmt->get_result();
 </body>
 </html>
 
-<?php
-$stmt->close();
-$conn->close();
-include 'footer.php';
-?>
+<?php include 'footer.php'; ?>

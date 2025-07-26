@@ -1,7 +1,7 @@
 <?php
 $languages = [
   
-  ['code' => 'none', 'label' => 'ללא תרגום', 'flag' => 'flags/none.gif'],
+  ['code' => 'none', 'label' => 'ללא כתוביות', 'flag' => 'flags/none.gif'],
   ['code' => 'silent', 'label' => 'ללא דיאלוג', 'flag' => 'flags/silent.gif'],
   ['code' => 'hebrew', 'label' => 'עברית', 'flag' => 'flags/hebrew.gif'],
   ['code' => 'hebdub', 'label' => 'מדובב', 'flag' => 'flags/hebdub.gif'],
@@ -10,7 +10,7 @@ $languages = [
   ['code' => 'french', 'label' => 'French', 'flag' => 'flags/french.gif'],
   ['code' => 'arabic', 'label' => 'Arabic', 'flag' => 'flags/arabic.gif'],
   ['code' => 'portuguese', 'label' => 'Portuguese', 'flag' => 'flags/portuguese.gif'],
-  ['code' => 'brazilian-portuguese', 'label' => 'Brazilian Port.', 'flag' => 'flags/brazilian-portuguese.gif'],
+  ['code' => 'brazilian', 'label' => 'Brazilian Port.', 'flag' => 'flags/brazilian-portuguese.gif'],
   ['code' => 'bulgarian', 'label' => 'Bulgarian', 'flag' => 'flags/bulgarian.gif'],
   ['code' => 'chinese', 'label' => 'Chinese', 'flag' => 'flags/chinese.gif'],
   ['code' => 'croatian', 'label' => 'Croatian', 'flag' => 'flags/croatian.gif'],

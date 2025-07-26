@@ -5,8 +5,19 @@ $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 // ספירה לפי סוג
-$count_series = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='series'")->fetch_assoc()['c'];
-$count_movies = $conn->query("SELECT COUNT(*) AS c FROM posters WHERE type='movie'")->fetch_assoc()['c'];
+$count_series = $conn->query("
+  SELECT COUNT(*) AS c
+  FROM posters p
+  JOIN poster_types pt ON pt.id = p.type_id
+  WHERE pt.code = 'series'
+")->fetch_assoc()['c'];
+
+$count_movies = $conn->query("
+  SELECT COUNT(*) AS c
+  FROM posters p
+  JOIN poster_types pt ON pt.id = p.type_id
+  WHERE pt.code = 'movie'
+")->fetch_assoc()['c'];
 
 // ספירה לפי תגית
 $tags = $conn->query("
@@ -31,8 +42,9 @@ Thisel.db1@gmail.com
   <div class="box">
  <span><a href="movies.php">🎬 סרטים: <strong><?= $count_movies ?></a></strong></span> |
   <span><a href="series.php">📺 סדרות: <strong><?= $count_series ?></a></strong></span> |
-  <span><a href="https://github.com/xrTor/Thiseldb-PHP" target="_blank">קוד מקור</span><br>
+  <span><a href="https://github.com/xrTor/Thiseldb_V1" target="_blank">קוד מקור</span></a><br>
  </div><br><br>
 </footer>
+
 </body>
 </html>

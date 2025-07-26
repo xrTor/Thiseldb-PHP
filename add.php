@@ -8,6 +8,11 @@ ini_set('display_errors', 1);
 // חיבור למסד
  require_once 'server.php';
 
+ // שליפת סוגים כולל קוד
+$types_result = $conn->query("SELECT id, label_he, icon, code FROM poster_types ORDER BY sort_order");
+$default_code = 'movie'; // ברירת מחדל: סרט
+
+
 $message = '';
 $poster_id = 0;
 
@@ -22,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $imdb_link        = trim($_POST['imdb_link'] ?? '');
   $image_url        = trim($_POST['image_url'] ?? '');
   $plot             = trim($_POST['plot'] ?? '');
-  $type             = $_POST['type'] ?? 'movie';
+  $type             = intval($_POST['type_id']) ?? 'movie';
   $tvdb_id          = trim($_POST['tvdb_id'] ?? '');
   $genre            = trim($_POST['genre'] ?? '');
   $actors           = trim($_POST['actors'] ?? '');
@@ -62,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if (empty($message)) {
     $stmt = $conn->prepare("INSERT INTO posters 
-      (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type,
+      (title_en, title_he, year, imdb_rating, imdb_link, image_url, plot, type_id,
        tvdb_id, genre, actors, youtube_trailer, has_subtitles, is_dubbed, lang_code,
        imdb_id, metacritic_score, rt_score, metacritic_link, rt_link)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -170,8 +175,20 @@ $conn->close();
 
 <form method="post" action="add.php">
   <label>🔗 קישור ל־IMDb:</label>
-  <input type="text" name="imdb_link"><br>
+  <input type="text" name="imdb_link"><br><br>
   <button type="button" onclick="fetchFromIMDb()">🕵️‍♂️ שלוף פרטים</button>
+
+ 
+  <label>🎞️ סוג הפוסטר:</label>
+<select name="type_id" required>
+<?php while($t = $types_result->fetch_assoc()):
+  $selected = ($t['code'] === $default_code) ? 'selected' : '';
+  $icon = htmlspecialchars($t['icon']);
+  $label = htmlspecialchars($t['label_he']);
+?>
+  <option value="<?= $t['id'] ?>" <?= $selected ?>><?= "$icon $label" ?></option>
+<?php endwhile; ?>
+</select>
 
   <label>כותרת באנגלית:</label><input type="text" name="title_en">
   <label>כותרת בעברית:</label><input type="text" name="title_he">
@@ -185,13 +202,6 @@ $conn->close();
   <label>🔗 TVDB ID:</label><input type="text" name="tvdb_id">
   <label>🎞️ טריילר YouTube:</label><input type="text" name="youtube_trailer">
   <div id="trailerPreview"></div>
-  <label>סוג:</label>
-<select name="type">
-  <option value="movie">🎬 סרט</option>
-  <option value="series">📺 סדרה</option>
-  <option value="short">🎞️ סרט קצר</option>
-  <option value="miniseries">📺 מיני-סדרה</option>
-</select>
 
   <label>📝 כתוביות:</label><input type="checkbox" name="has_subtitles" value="1">
   <label>🎙️ דיבוב:</label><input type="checkbox" name="is_dubbed" value="1">
@@ -218,7 +228,7 @@ $conn->close();
   <br>
   <button type="submit">💾 שמור פוסטר</button>
 </form>
-
+   
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const imdbInput = document.querySelector("[name='imdb_link']");

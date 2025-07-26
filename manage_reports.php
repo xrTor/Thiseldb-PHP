@@ -31,7 +31,7 @@ $result = $conn->query($sql);
   <meta charset="UTF-8">
   <title>🛠️ ניהול דיווחים</title>
   <style>
-    body { font-family:Arial; background:#f2f2f2; padding:40px; direction:rtl; }
+    body { font-family:Arial; background:#f2f2f2; padding:10px; direction:rtl; }
     h2 { margin-bottom:20px; }
     table { width:100%; border-collapse:collapse; background:white; }
     th, td { padding:12px; border-bottom:1px solid #ccc; text-align:right; }

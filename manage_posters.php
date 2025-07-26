@@ -6,7 +6,7 @@ $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : 
 
 // שולפים פוסטרים עם שם ו־imdb_id קיימים, עם חיפוש אם נשלח
 $posters = $conn->query("
-  SELECT id, title_en, type, year, imdb_id 
+  SELECT id, title_en, type_id, year, imdb_id 
   FROM posters 
   WHERE title_en IS NOT NULL AND title_en != ''
     " . ($search ? "AND title_en LIKE '%$search%'" : "") . "
@@ -25,7 +25,7 @@ if (!$posters) {
   <meta charset="UTF-8">
   <title>📁 ניהול פוסטרים</title>
   <style>
-    body { font-family:Arial; background:#f9f9f9; padding:40px; text-align:center; }
+    body { font-family:Arial; background:#f9f9f9; padding:10px; text-align:center; }
     h1 { margin-bottom:30px; }
     table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 0 8px rgba(0,0,0,0.1); }
     th, td { padding:12px; border-bottom:1px solid #ccc; text-align:right; }
@@ -76,7 +76,7 @@ if (!$posters) {
           —
         <?php endif; ?>
       </td>
-      <td><?= $row['type'] ?></td>
+      <td><?= $row['type_id'] ?></td>
       <td><?= $row['year'] ?></td>
       <td>
         <a href="edit.php?id=<?= $row['id'] ?>" class="action">✏️ עריכה</a>
@@ -86,7 +86,7 @@ if (!$posters) {
   <?php endwhile; ?>
 </table>
 
-<p style="margin-top:30px;"><a href="add_poster.php">➕ הוסף פוסטר חדש</a></p>
+<p style="margin-top:30px;"><a href="add.php">➕ הוסף פוסטר חדש</a></p>
 
 <?php include 'footer.php'; ?>
 </body>

@@ -157,7 +157,9 @@ $total_pages = ceil($total_posters / $per_page);
         <?php foreach ($poster_list as $p): ?>
           <div class="poster-item medium">
             <a href="poster.php?id=<?= $p['id'] ?>">
-              <img src="<?= htmlspecialchars($p['image_url']) ?>" alt="Poster">
+              <?php $img = trim($p['image_url'] ?? '') ?: 'images/no-poster.png'; ?>
+<img src="<?= htmlspecialchars($img) ?>" alt="Poster">
+
               <small><?= htmlspecialchars($p['title_en']) ?></small>
               <?php if (!empty($p['title_he'])): ?>
                 <div class="title-he"><?= htmlspecialchars($p['title_he']) ?></div>
@@ -197,7 +199,7 @@ $total_pages = ceil($total_posters / $per_page);
       <?php if (!empty($p['imdb_id'])): ?>
         <div class="imdb-id">
           <a href="https://www.imdb.com/title/<?= htmlspecialchars($p['imdb_id']) ?>" target="_blank">
-            IMDb: <?= htmlspecialchars($p['imdb_id']) ?>
+            <?= htmlspecialchars($p['imdb_id']) ?>
           </a>
         </div>
       <?php endif; ?>

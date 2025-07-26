@@ -17,7 +17,10 @@ function extractYoutubeId($url) {
 require_once 'server.php';
  
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$result = $conn->query("SELECT * FROM posters WHERE id = $id");
+$result = $conn->query("SELECT p.*, pt.label_he AS type_label, pt.icon AS type_icon
+  FROM posters p
+  LEFT JOIN poster_types pt ON p.type_id = pt.id
+  WHERE p.id = $id");
 if ($result->num_rows == 0) { echo "<p style='text-align:center;'>❌ פוסטר לא נמצא</p>"; exit; }
 $row = $result->fetch_assoc();
 $video_id = extractYoutubeId($row['youtube_trailer'] ?? '');
@@ -63,14 +66,29 @@ $dislikes = $conn->query("
 
 // פעולות: תגיות, סרטים דומים
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-  if (isset($_POST['add_user_tags'])) {
-    $g = trim($_POST['user_tags'] ?? '');
-    if ($g !== '') {
-      $stmt = $conn->prepare("INSERT INTO user_tags (poster_id, genre) VALUES (?, ?)");
-      $stmt->bind_param("is", $id, $g); $stmt->execute(); $stmt->close();
-      $message = "✅ תגית נוספה";
+ if (isset($_POST['add_user_tags'])) {
+  $g = trim($_POST['user_tags'] ?? '');
+  if ($g !== '') {
+    // בדוק אם התגית כבר קיימת בז'אנר הראשי
+    $existing_genres = array_map('trim', explode(',', $row['genre']));
+    if (in_array($g, $existing_genres)) {
+      $message = "⚠️ תגית כבר קיימת בז׳אנרים";
+    } else {
+      // בדוק אם קיימת כבר ב-user_tags
+      $stmt = $conn->prepare("SELECT 1 FROM user_tags WHERE poster_id = ? AND genre = ?");
+      $stmt->bind_param("is", $id, $g); $stmt->execute(); $stmt->store_result();
+      if ($stmt->num_rows > 0) {
+        $message = "⚠️ תגית כבר קיימת";
+      } else {
+        $stmt = $conn->prepare("INSERT INTO user_tags (poster_id, genre) VALUES (?, ?)");
+        $stmt->bind_param("is", $id, $g); $stmt->execute();
+        $message = "✅ תגית נוספה";
+      }
+      $stmt->close();
     }
   }
+}
+
 
   if (isset($_POST['remove_user_tags'])) {
     $gid = (int)$_POST['remove_user_tags'];
@@ -90,16 +108,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       if ($r = $res->fetch_assoc()) $target_id = $r['id'];
       $stmt->close();
     }
-    if ($target_id > 0 && $target_id != $id) {
-      $check = $conn->prepare("SELECT 1 FROM poster_similar WHERE poster_id=? AND similar_id=?");
-      $check->bind_param("ii", $id, $target_id); $check->execute(); $check->store_result();
-      if ($check->num_rows == 0) {
-        $conn->query("INSERT INTO poster_similar (poster_id, similar_id) VALUES ($id, $target_id)");
-        $conn->query("INSERT INTO poster_similar (poster_id, similar_id) VALUES ($target_id, $id)");
-        $message = "✅ סרט דומה נוסף";
-      } else $message = "⚠️ הקשר כבר קיים";
-      $check->close();
-    } else $message = "❌ הסרט לא נמצא";
+if ($target_id > 0 && $target_id != $id) {
+  $exists = $conn->prepare("SELECT 1 FROM posters WHERE id = ?");
+  $exists->bind_param("i", $target_id);
+  $exists->execute();
+  $exists->store_result();
+
+  if ($exists->num_rows === 0) {
+    $message = "❌ הסרט לא קיים במסד הנתונים";
+  } else {
+    $check = $conn->prepare("SELECT 1 FROM poster_similar WHERE poster_id=? AND similar_id=?");
+    $check->bind_param("ii", $id, $target_id); $check->execute(); $check->store_result();
+    if ($check->num_rows == 0) {
+      $conn->query("INSERT INTO poster_similar (poster_id, similar_id) VALUES ($id, $target_id)");
+      $conn->query("INSERT INTO poster_similar (poster_id, similar_id) VALUES ($target_id, $id)");
+      $message = "✅ סרט דומה נוסף";
+    } else {
+      $message = "⚠️ הקשר כבר קיים";
+    }
+    $check->close();
+  }
+  $exists->close();
+} else {
+  $message = "❌ הסרט לא נמצא";
+}
   }
 
   if (isset($_POST['remove_similar'])) {
@@ -122,6 +154,17 @@ $res = $conn->query("
 ");
 while ($r = $res->fetch_assoc()) $collections[] = $r;
 
+switch ($row['type'] ?? '') {
+  case 'series':
+    break;
+  case 'movie':
+    break;
+  case 'short':
+    break;
+  case 'miniseries':
+    break;
+  default:
+    }
 ?>
 
 <!DOCTYPE html>
@@ -182,7 +225,7 @@ while ($r = $res->fetch_assoc()) $collections[] = $r;
       ❌ בטל הצבעה
     </button>
   <?php endif; ?>
-</form>
+</form><br>
 
   <?php if ($message): ?>
     <p style="background:#ffe; border:1px solid #cc9; padding:10px; border-radius:6px; color:#444; font-weight:bold;">
@@ -190,8 +233,80 @@ while ($r = $res->fetch_assoc()) $collections[] = $r;
     </p>
   <?php endif; ?>
 
-  <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="Poster" class="poster-image">
-  <div class="poster-details">
+  
+<div style="float: right; width: 220px; margin-left: 20px; text-align: right;">
+<?php
+$img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png';
+?>
+<img src="<?= htmlspecialchars($img) ?>" alt="Poster" style="width: 100%; border-radius: 2px;">
+  <div style="margin-top: 10px;">
+    <p><strong>🗓️ שנה:</strong> <?= htmlspecialchars($row['year']) ?></p>
+<?php if (!empty($row['type_label']) || !empty($row['type_icon'])): ?>
+<p><strong>🎞️ סוג:</strong> <?= htmlspecialchars($row['type_icon'] . ' ' . $row['type_label']) ?></p>
+<?php endif; ?>
+<!--
+<p><strong>🌐</strong><br>
+  -->
+<p><strong></strong>
+  <?php
+  include 'languages.php';
+  $lang_result = $conn->query("SELECT lang_code FROM poster_languages WHERE poster_id = $id");
+  if ($lang_result->num_rows > 0):
+    while ($l = $lang_result->fetch_assoc()):
+      $code = $l['lang_code'];
+      foreach ($languages as $lang) {
+        if ($lang['code'] === $code) {
+          echo "<a href='language.php?lang_code=" . urlencode($code) . "' style='display:inline-flex; align-items:center; gap:6px; text-decoration:none; margin:4px 0;'>";
+          echo "<img src='" . $lang['flag'] . "' alt='" . $lang['label'] . "' style='height:16px;'> ";
+          echo "<span>" . $lang['label'] . "</span>";
+          echo "</a><br>";
+          break;
+        }
+      }
+    endwhile;
+  else:
+    echo "<span style='color:#999;'>אין שפות</span>";
+  endif;
+  ?>
+</p>
+
+
+    <?php if (!empty($row['genre'])):
+      $genres = explode(',', $row['genre']);
+      echo "<p><strong>🎭 ז׳אנר:</strong><br>";
+      foreach ($genres as $g):
+        $g_clean = trim($g); ?>
+        <a href="genre.php?name=<?= urlencode($g_clean) ?>" class="tag"><?= htmlspecialchars($g_clean) ?></a><br>
+      <?php endforeach;
+      echo "</p>";
+    endif; ?>
+    
+    <!-- 📝 תגיות קהילתיות -->
+    <?php
+    $res_user = $conn->query("SELECT id, genre FROM user_tags WHERE poster_id = $id");
+    if ($res_user->num_rows > 0): ?>
+      <p><strong>📝 תגיות משתמשים:</strong><br>
+        <?php while ($g = $res_user->fetch_assoc()):
+          $g_clean = trim($g['genre']); ?><br>
+          <form method="post" style="display:inline;">
+            <a href="user_tags.php?name=<?= urlencode($g_clean) ?>" class="tag"><?= htmlspecialchars($g_clean) ?></a>
+            <button type="submit" name="remove_user_tags" value="<?= $g['id'] ?>"
+              style="border:none; background:none; color:#900; cursor:pointer;">🗑️</button>
+          </form>
+        <?php endwhile; ?>
+      </p>
+    <?php endif; ?>
+
+    <!-- ➕ טופס להוספת תגית -->
+    <form method="post" style="margin-bottom:20px;">
+      <input type="text" name="user_tags" placeholder="הוסף תגית" required>
+      <button type="submit" name="add_user_tags">➕ הוסף</button>
+    </form>
+  </div>
+</div>
+
+
+<div class="poster-details">
     <h2>
       <?= htmlspecialchars($row['title_en']) ?>
       <?php if (!empty($row['title_he'])): ?><br><?= htmlspecialchars($row['title_he']) ?><?php endif; ?>
@@ -204,47 +319,29 @@ while ($r = $res->fetch_assoc()) $collections[] = $r;
       </p>
     <?php endif; ?>
 
- <?php
-switch ($row['type'] ?? '') {
-  case 'series':
-    $type_label = '📺 סדרה';
-    break;
-  case 'movie':
-    $type_label = '🎬 סרט';
-    break;
-  case 'short':
-    $type_label = '🎞️ סרט קצר';
-    break;
-  case 'miniseries':
-    $type_label = '📺 מיני-סדרה';
-    break;
-  default:
-    $type_label = '❓ לא ידוע';
-}
-?>
-
 <p><strong>🗓️ שנה:</strong> <?= htmlspecialchars($row['year']) ?></p>
-<p><strong>🎞️ סוג:</strong> <?= $type_label ?></p>
 <p><strong>⭐ IMDb:</strong> <?= $row['imdb_rating'] ? htmlspecialchars($row['imdb_rating']) . ' / 10' : 'לא זמין' ?></p>
 
     <p><strong>🔤 IMDb ID:</strong> <?= htmlspecialchars($row['imdb_id']) ?></p>
 
      <!-- 🎞️ טריילר מוטמע -->
-    <?php if ($video_id): ?>
-      <div style="margin-top:30px; text-align:center;">
-        <h3>🎞️ טריילר</h3>
-        <iframe width="100%" height="315"
-          src="https://www.youtube.com/embed/<?= htmlspecialchars($video_id) ?>"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen loading="lazy"></iframe>
-      </div>
-    <?php else: ?>
-      <div style="margin-top:30px; text-align:center; color:#888;">
-        <h3>🎞️ טריילר</h3>
-        <p>אין טריילר זמין כרגע 😢</p>
-      </div>
-    <?php endif; ?>
+ <?php if ($video_id): ?>
+  <div style="margin-top:30px; text-align:center;">
+    <h3>🎞️ טריילר</h3>
+    <iframe width="100%" height="315"
+      src="https://www.youtube.com/embed/<?= htmlspecialchars($video_id) ?>"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen loading="lazy"></iframe>
+  </div>
+<?php else: ?>
+  <div style="margin-top:30px; text-align:center;">
+    <h3>🎞️ טריילר</h3>
+    <img src="images/no-trailer.png" alt="אין טריילר" style="width:300px; border-radius:6px;">
+    <p style="color:#888;">אין טריילר זמין כרגע</p>
+  </div>
+<?php endif; ?>
+
     
 
     <?php if (!empty($row['tvdb_id'])): ?>
@@ -279,29 +376,7 @@ switch ($row['type'] ?? '') {
       </p>
     <?php endif; ?>
 
-    <p><strong>🌐 שפת מקור:</strong><br>
-      <?php
-      $lang_result = $conn->query("SELECT lang_code FROM poster_languages WHERE poster_id = $id");
-      if ($lang_result->num_rows > 0):
-        while ($l = $lang_result->fetch_assoc()):
-          $lang_code = $l['lang_code'];
-          echo "<a href='language.php?lang_code=" . urlencode($lang_code) . "' class='tag'>" . htmlspecialchars($lang_code) . "</a> ";
-        endwhile;
-      else:
-        echo "<span style='color:#999;'>אין שפות נוספות</span>";
-      endif;
-      ?>
-    </p>
-
-    <?php if (!empty($row['genre'])):
-      $genres = explode(',', $row['genre']);
-      echo "<p><strong>🎭 ז׳אנר:</strong><br>";
-      foreach ($genres as $g):
-        $g_clean = trim($g); ?>
-        <a href="genre.php?name=<?= urlencode($g_clean) ?>" class="tag"><?= htmlspecialchars($g_clean) ?></a>
-      <?php endforeach;
-      echo "</p>";
-    endif; ?>
+    
 
     <?php if (!empty($row['actors'])):
       echo "<p><strong>👥 שחקנים:</strong><br>";
@@ -343,27 +418,6 @@ switch ($row['type'] ?? '') {
   </p>
 <?php endif; ?>
 
-    <!-- 📝 תגיות קהילתיות -->
-    <?php
-    $res_user = $conn->query("SELECT id, genre FROM user_tags WHERE poster_id = $id");
-    if ($res_user->num_rows > 0): ?>
-      <p><strong>📝 תגיות משתמשים:</strong><br>
-        <?php while ($g = $res_user->fetch_assoc()):
-          $g_clean = trim($g['genre']); ?>
-          <form method="post" style="display:inline;">
-            <a href="user_tags.php?name=<?= urlencode($g_clean) ?>" class="tag"><?= htmlspecialchars($g_clean) ?></a>
-            <button type="submit" name="remove_user_tags" value="<?= $g['id'] ?>"
-              style="border:none; background:none; color:#900; cursor:pointer;">🗑️</button>
-          </form>
-        <?php endwhile; ?>
-      </p>
-    <?php endif; ?>
-
-    <!-- ➕ טופס להוספת תגית -->
-    <form method="post" style="margin-bottom:20px;">
-      <input type="text" name="user_tags" placeholder="הוסף תגית" required>
-      <button type="submit" name="add_user_tags">➕ הוסף</button>
-    </form>
 
     <!-- 🎬 סרטים דומים -->
     <hr>
@@ -371,16 +425,18 @@ switch ($row['type'] ?? '') {
     <?php if ($similar): ?>
       <div style="display:flex; flex-wrap:wrap; gap:16px;">
         <?php foreach ($similar as $sim): ?>
-          <div style="width:100px; text-align:center;">
-            <form method="post">
-              <a href="poster.php?id=<?= $sim['id'] ?>">
-                <img src="<?= htmlspecialchars($sim['image_url']) ?>" style="width:100px; border-radius:1px;"><br>
-                <small><?= htmlspecialchars($sim['title_en']) ?></small>
-              </a><br>
-              <button type="submit" name="remove_similar" value="<?= $sim['id'] ?>">🗑️</button>
-            </form>
-          </div>
-        <?php endforeach; ?>
+  <?php $sim_img = (!empty($sim['image_url'])) ? $sim['image_url'] : 'images/no-poster.png'; ?>
+  <div style="width:100px; text-align:center;">
+    <form method="post">
+      <a href="poster.php?id=<?= $sim['id'] ?>">
+        <img src="<?= htmlspecialchars($sim_img) ?>" style="width:100px; border-radius:1px;"><br>
+        <small><?= htmlspecialchars($sim['title_en']) ?></small>
+      </a><br>
+      <button type="submit" name="remove_similar" value="<?= $sim['id'] ?>">🗑️</button>
+    </form>
+  </div>
+<?php endforeach; ?>
+
       </div>
     <?php else: ?>
       <p style="color:#888;">אין סרטים דומים כרגע</p>
