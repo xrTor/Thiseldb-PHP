@@ -246,12 +246,36 @@ if (!empty($row['tmdb_collection_id'])) {
       <?php if (!empty($row['type_label']) || !empty($row['type_icon'])): ?>
       <p><strong>🎞️ סוג:</strong> <?= htmlspecialchars($row['type_icon'] . ' ' . $row['type_label']) ?></p>
       <?php endif; ?>
+      
+<p><strong></strong>
+  <?php
+  include 'languages.php';
+  $lang_result = $conn->query("SELECT lang_code FROM poster_languages WHERE poster_id = $id");
+  if ($lang_result->num_rows > 0):
+    while ($l = $lang_result->fetch_assoc()):
+      $code = $l['lang_code'];
+      foreach ($languages as $lang) {
+        if ($lang['code'] === $code) {
+          echo "<a href='language.php?lang_code=" . urlencode($code) . "' style='display:inline-flex; align-items:center; gap:6px; text-decoration:none; margin:4px 0;'>";
+          echo "<img src='" . $lang['flag'] . "' alt='" . $lang['label'] . "' style='height:16px;'> ";
+          echo "<span>" . $lang['label'] . "</span>";
+          echo "</a><br>";
+          break;
+        }
+      }
+    endwhile;
+  else:
+    echo "<span style='color:#999;'>אין סיווגים</span>";
+  endif;
+  ?>
+</p>
+
       <!-- שפות לחיצות -->
       <p><strong>🔤 שפות:</strong>
       <?php
       $langs = array_filter(array_map('trim', explode(',', $row['languages'] ?? '')));
       foreach ($langs as $lang) {
-        echo '<a class="tag" href="language.php?lang_code='.urlencode($lang).'">'.htmlspecialchars($lang).'</a> ';
+        echo '<a class="tag" href="language_imdb.php?lang_code='.urlencode($lang).'">'.htmlspecialchars($lang).'</a> ';
       }
       ?>
       </p>
@@ -265,6 +289,7 @@ if (!empty($row['tmdb_collection_id'])) {
       }
       ?>
       </p>
+      
       <?php if (!empty($row['genre'])):
         $genres = explode(',', $row['genre']);
         echo "<p><strong>🎭 ז׳אנר:</strong><br>";
@@ -392,29 +417,13 @@ if (!empty($row['tmdb_collection_id'])) {
 
     <!-- אוסף/סדרת סרטים (מקומי) -->
 <?php if (count($collections) > 0): ?>
-  <h3>🎞️ סרטים באוסף:</h3>
+  <h3>🎞️אוספים:</h3>
   <?php foreach ($collections as $c): ?>
     <div>
       <div style="margin-bottom:6px;">
         <a href="collection.php?id=<?= $c['id'] ?>" class="tag"><?= safe($c['name']) ?></a>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:14px;">
-        <?php
-        $res_movies = $conn->query("SELECT p.id, p.title_en, p.title_he, p.image_url
-          FROM poster_collections pc
-          JOIN posters p ON pc.poster_id = p.id
-          WHERE pc.collection_id = ".$c['id']." ORDER BY p.year, p.title_en");
-        while ($p = $res_movies->fetch_assoc()):
-          $img = $p['image_url'] ?: 'images/no-poster.png';
-        ?>
-        <div style="text-align:center;width:90px;">
-          <a href="poster.php?id=<?= $p['id'] ?>">
-            <img src="<?= safe($img) ?>" style="width:85px;height:120px;object-fit:cover;border-radius:3px;"><br>
-            <span style="font-size:12px"><?= safe($p['title_en']) ?></span>
-            <?php if (!empty($p['title_he'])): ?><br><span style="font-size:11px;color:#666;"><?= safe($p['title_he']) ?></span><?php endif; ?>
-          </a>
-        </div>
-        <?php endwhile; ?>
+      
       </div>
     </div>
     <br>

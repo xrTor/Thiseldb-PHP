@@ -270,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
 <body>
   <h2>📥 הוספת פוסטרים אוטומטית לפי IMDb</h2>
   <form method="post">
-    <textarea name="imdb_ids" rows="10" placeholder="הכנס IMDb ID או קישורים בשורות נפרדות"></textarea><br>
+    <textarea name="imdb_ids" rows="10" placeholder="הכנס IMDb ID או קישורים בשורות נפרדות" style="width:400px"></textarea><br>
     <button type="submit">🚀 הוסף</button>
   </form>
   <hr>
@@ -284,3 +284,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
   <?php endforeach; ?>
 </body>
 </html>
+<?php include 'footer.php'; ?>
