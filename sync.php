@@ -1,23 +1,27 @@
 <?php include 'header.php'; 
 require_once 'server.php';
 
+set_time_limit(3000000);
+
 $conn->set_charset("utf8");
 
-// שליפת כל הפוסטרים עם image_url תקף ו imdb_id
-$result = $conn->query("SELECT id, image_url, imdb_id FROM posters WHERE image_url LIKE 'http%' AND imdb_id IS NOT NULL");
+// שליפת כל הפוסטרים עם image_url תקף
+$result = $conn->query("SELECT id, image_url, imdb_id FROM posters WHERE image_url LIKE 'http%'");
 
 echo "<h3>📥 סנכרון תמונות מהאינטרנט</h3>";
 echo "<ul>";
 
 while ($row = $result->fetch_assoc()) {
-    $id = $row['id'];
-    $url = $row['image_url'];
-    $imdb = $row['imdb_id'];
+    $id    = $row['id'];
+    $url   = $row['image_url'];
+    $imdb  = $row['imdb_id'];
 
     $extension = pathinfo($url, PATHINFO_EXTENSION);
     if (!$extension || strlen($extension) > 5) $extension = 'jpg'; // סיומת ברירת מחדל
 
-    $localPath = "uploads/" . $imdb . "." . strtolower($extension);
+    // אם אין imdb_id נשתמש ב־ID כדי ליצור שם ייחודי
+    $fileName = $imdb ?: "poster_" . $id;
+    $localPath = "uploads/" . $fileName . "." . strtolower($extension);
 
     $image = @file_get_contents($url);
     if ($image && file_put_contents($localPath, $image)) {

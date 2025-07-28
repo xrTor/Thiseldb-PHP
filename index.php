@@ -94,7 +94,9 @@ while ($row = $result->fetch_assoc()) $rows[] = $row;
   <?php foreach ($rows as $row): ?>
     <div class="poster ltr">
       <?php $img = (!empty($row['image_url'])) ? $row['image_url'] : 'images/no-poster.png'; ?>
-      <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($row['title_en']) ?>">
+      <a href="poster.php?id=<?= $row['id'] ?>">
+  <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($row['title_en']) ?>">
+</a> 
 
       <div class="poster-title ltr">
         <b><?= htmlspecialchars($row['title_en']) ?>

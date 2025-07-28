@@ -1,7 +1,7 @@
 <?php
 
 $host = 'localhost';
-$db   = 'media';
+$db   = 'thiseldb';
 $user = 'root';
 $pass = '';
 

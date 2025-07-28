@@ -42,7 +42,7 @@ Thisel.db1@gmail.com
   <div class="box">
  <span><a href="movies.php">🎬 סרטים: <strong><?= $count_movies ?></a></strong></span> |
   <span><a href="series.php">📺 סדרות: <strong><?= $count_series ?></a></strong></span> |
-  <span><a href="https://github.com/xrTor/Thiseldb_V1" target="_blank">קוד מקור</span></a><br>
+  <span><a href="https://github.com/xrTor/Thiseldb" target="_blank">קוד מקור</span></a><br>
  </div><br><br>
 </footer>
 

@@ -1,9 +1,18 @@
 <?php include 'header.php'; 
 require_once 'server.php';
-?>
 
-<?php
-require_once 'server.php';
+if (isset($_POST['poster_id'], $_POST['remove_lang'])) {
+  $pid = (int)$_POST['poster_id'];
+  $lang = $_POST['remove_lang'];
+
+  $stmt = $conn->prepare("DELETE FROM poster_languages WHERE poster_id = ? AND lang_code = ?");
+  $stmt->bind_param("is", $pid, $lang);
+  $stmt->execute();
+  $stmt->close();
+
+  // אפשרות: להוסיף הודעה על הצלחה
+  $log_report[] = ['status' => 'removed', 'id' => $pid, 'lang' => $lang];
+}
 
 function safe($str) {
   return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');

@@ -34,6 +34,7 @@ echo "<!-- current page: $current -->";
   $pages = [
 
     'add.php' => '➕ הוסף פוסטר חדש',
+    'auto-add.php' => 'הוספה אוטומטית',
     'export.php' => '📤 ייצוא לCSV',
     'panel.php' => 'פאנל ניהול',
     
