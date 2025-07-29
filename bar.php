@@ -137,7 +137,7 @@ $fields = [
       background: #fff;
       transition: background .18s;
     }
-    .bar-bottom-row select:focus { border-color: #268dff; background: #eef6ff; }
+    .bar-bottom-row select:focus { border-color: #268dff; background: white; }
     .flags-btn {
       background: ;
       color: #008;

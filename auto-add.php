@@ -10,7 +10,7 @@ function safe($str) {
 }
 
 $tmdb_key = '931b94936ba364daf0fd91fb38ecd91e';
-$omdb_key = '1ae9a12e';
+$omdb_key = 'f7e4ae0b';
 $report = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {

@@ -100,7 +100,7 @@ while ($row = $result->fetch_assoc()) $rows[] = $row;
 
       <div class="poster-title ltr">
         <b><?= htmlspecialchars($row['title_en']) ?>
-          <?php if (!empty($row['title_he'])): ?><br><?= htmlspecialchars($row['title_he']) ?><?php endif; ?>
+          <?php if (!empty($row['title_he'])): ?><br><span style="color:#777;"><?= htmlspecialchars($row['title_he']) ?><?php endif; ?>
         </b><br>[<?= $row['year'] ?>]
       </div>
 

@@ -18,6 +18,7 @@ $results = [];
 $num_results = 0;
 
 if (!empty($keyword)) {
+  // שדות החיפוש הרגילים
   $searchFields = [
     "title_en", "title_he", "plot", "plot_he", "actors", "genre",
     "directors", "writers", "producers", "composers", "cinematographers",
@@ -27,8 +28,21 @@ if (!empty($keyword)) {
   $params = array_fill(0, count($searchFields), $like);
   $types  = str_repeat('s', count($searchFields));
   $where  = [];
-  foreach ($searchFields as $f) $where[] = "$f LIKE ?";
-  $sql = "SELECT * FROM posters WHERE " . implode(' OR ', $where) . " ORDER BY year DESC, title_en ASC LIMIT 80";
+  foreach ($searchFields as $f) $where[] = "p.$f LIKE ?";
+
+  // הוספת חיפוש בתגיות משתמש
+  $where[] = "ut.genre LIKE ?";
+  $params[] = $like;
+  $types .= 's';
+
+  $sql = "
+    SELECT DISTINCT p.*
+    FROM posters p
+    LEFT JOIN user_tags ut ON ut.poster_id = p.id
+    WHERE (" . implode(' OR ', $where) . ")
+    ORDER BY p.year DESC, p.title_en ASC
+    LIMIT 80
+  ";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param($types, ...$params);
   $stmt->execute();
@@ -110,12 +124,6 @@ if (!empty($keyword)) {
   </style>
 </head>
 <body>
-  <div class="w3-center">
-    <form method="get" action="search.php" class="search-container">
-      <input type="text" name="q" placeholder="🔎 הקלד מילה, מזהה IMDb, קישור או שם">
-      <button type="submit" class="w3-button w3-blue">🔍 חפש</button>
-    </form>
-  </div>
 
   <h2 class="w3-center">
     <?= empty($keyword) ? '🔍 חיפוש פוסטרים' : '🔍 תוצאות עבור: ' . htmlspecialchars($keyword) ?>
