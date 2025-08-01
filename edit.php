@@ -166,6 +166,11 @@ $user_tags_str = implode("\n", $user_tags);
     <h2>✏️ עריכת פוסטר</h2>
     <?php if ($message): ?><div class="ok"><?= $message ?></div><?php endif; ?>
 
+         <div class="row-buttons">
+        <button type="submit">💾 שמור</button>
+        <a href="poster.php?id=<?= $id ?>">🔙 חזור</a>
+    </div>
+    
     <table class="edit-table">
         <tr>
             <td>סוג הפוסטר</td>

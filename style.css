@@ -126,7 +126,6 @@ display: flex
   margin-top: 6px;
   text-align: center;
 }
-
 .tag-link {
   background-color: #eee;
   padding: 4px 8px;
@@ -232,3 +231,5 @@ display: flex
   text-decoration: none;
 }
 
+
+ a:hover {text-decoration:none!important;}

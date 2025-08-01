@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>בדיקת פוסטרים</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f0f0f0;
+      padding: 20px;
+      direction: rtl;
+    }
+
+    .poster-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .poster-item.small {
+      width: 100px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .poster-item.small img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+
+    .poster-text {
+      width: 100%;
+      height: 39px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .poster-text * {
+      font-size: 9px;
+      height: 13px;
+      line-height: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="poster-grid">
+    <div class="poster-item small">
+      <img src="https://via.placeholder.com/100x150?text=Poster+1" alt="Poster 1">
+      <div class="poster-text">
+        <small>The Little Mermaid</small>
+        <div class="title-he">בת הים הקטנה</div>
+        <div class="imdb-id"><a href="#">IMDb: tt0097757</a></div>
+      </div>
+    </div>
+    <div class="poster-item small">
+      <img src="https://via.placeholder.com/100x150?text=Poster+2" alt="Poster 2">
+      <div class="poster-text">
+        <small>Happy Feet</small>
+        <div class="title-he">רגליים</div>
+        <div class="imdb-id"><a href="#">IMDb: tt0365005</a></div>
+      </div>
+    </div>
+    <div class="poster-item small">
+      <img src="https://via.placeholder.com/100x150?text=Poster+3" alt="Poster 3">
+      <div class="poster-text">
+        <small>After</small>
+        <div class="title-he">...אחרי ש</div>
+        <div class="imdb-id"><a href="#">IMDb: tt4126476</a></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

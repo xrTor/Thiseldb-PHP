@@ -40,8 +40,8 @@ Thisel.db1@gmail.com
   סטטיסטיקה:
 
   <div class="box">
- <span>🎬 סרטים: <strong><?= $count_movies ?></strong></span> |
-  <span>📺 סדרות: <strong><?= $count_series ?></strong></span> |
+ <span><strong>🎬 סרטים: </strong><?= $count_movies ?></strong></span> |
+  <span><strong>📺 סדרות: </strong><?= $count_series ?></strong></span> |
   <span><a href="https://github.com/xrTor/Thiseldb" target="_blank">קוד מקור</span></a><br>
  </div><br><br>
 </footer>

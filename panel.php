@@ -109,15 +109,15 @@ $latest_reports = $conn->query("
     <a href="manage_collections.php">ניהול אוספים</a>
     <a href="manage_contacts.php">ניהול פניות</a>
     <a href="manage_reports.php">ניהול דיווחים</a>
-    <a href="poster_user_tag.php">ניהול תגיות</a>
+    <a href="manage_trailers.php">ניהול טריילים</a>
+    <a href="manage_genres.php">ניהול ז'אנרים</a>
+    <a href="manage_user_tag.php">ניהול תגיות</a>
     <a href="manage_languages.php">ניהול שפות</a>
-    <a href="type_admin.php">ניהול סוגים</a>
-    <a href="poster_trailers.php">ניהול טריילים</a>
-    <a href="mange_types.php">שיוך סוגים</a>
+    <a href="manage_types.php">ניהול סוגים</a>
+    <a href="type_admin.php">שיוך סוגים</a>
     <a href="sync.php">סנכרון תמונות מהאינטרנט</a>
 
-     
-    
+        
   </div>
 </div>
 

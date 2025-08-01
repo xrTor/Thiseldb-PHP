@@ -35,7 +35,7 @@ echo "<!-- current page: $current -->";
 
     'add.php' => '➕ הוסף פוסטר חדש',
     'auto-add.php' => 'הוספה אוטומטית',
-    'export.php' => '📤 ייצוא לCSV',
+    'export.php' => '💾 ייצוא לCSV',
     'panel.php' => 'פאנל ניהול',
     
   ];

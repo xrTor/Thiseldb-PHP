@@ -82,6 +82,7 @@ while ($row = $result->fetch_assoc()) $rows[] = $row;
   <meta charset="UTF-8">
   <title>Thiseldb</title>
   <link rel="stylesheet" href="style.css">
+  
 </head>
 <body class="rtl">
 

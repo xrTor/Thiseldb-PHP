@@ -10,7 +10,7 @@ function safe($str) {
 }
 
 $tmdb_key = '931b94936ba364daf0fd91fb38ecd91e';
-$omdb_key = 'f7e4ae0b';
+$omdb_key = '1ae9a12e';
 $report = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
@@ -53,8 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
         } elseif (!empty($tmdb['tv_results'][0]['original_name'])) {
             $original_title = $tmdb['tv_results'][0]['original_name'];
         }
-
-        // מוסיף AKA רק אם שונה מהשם באנגלית (ולא ריק)
         if ($original_title && $original_title !== $title_en) {
             $title_en = "$original_title AKA $title_en";
         }
@@ -104,27 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
 
         // תרגום/מיזוג
         $genre_translate = [
-            'Action' => 'אקשן',
-            'Adventure' => 'הרפתקאות',
-            'Animation' => 'אנימציה',
-            'Biography' => 'ביוגרפיה',
-            'Comedy' => 'קומדיה',
-            'Crime' => 'פשע',
-            'Documentary' => 'דוקומנטרי',
-            'Drama' => 'דרמה',
-            'Family' => 'משפחה',
-            'Fantasy' => 'פנטזיה',
-            'History' => 'היסטוריה',
-            'Horror' => 'אימה',
-            'Music' => 'מוזיקה',
-            'Musical' => 'מחזמר',
-            'Mystery' => 'מסתורין',
-            'Romance' => 'רומנטיקה',
-            'Sci-Fi' => 'מדע בדיוני',
-            'Sport' => 'ספורט',
-            'Thriller' => 'מותחן',
-            'War' => 'מלחמה',
-            'Western' => 'מערבון'
+            'Action' => 'אקשן', 'Adventure' => 'הרפתקאות', 'Animation' => 'אנימציה', 'Biography' => 'ביוגרפיה', 'Comedy' => 'קומדיה',
+            'Crime' => 'פשע', 'Documentary' => 'דוקומנטרי', 'Drama' => 'דרמה', 'Family' => 'משפחה', 'Fantasy' => 'פנטזיה',
+            'History' => 'היסטוריה', 'Horror' => 'אימה', 'Music' => 'מוזיקה', 'Musical' => 'מחזמר', 'Mystery' => 'מסתורין',
+            'Romance' => 'רומנטיקה', 'Sci-Fi' => 'מדע בדיוני', 'Sport' => 'ספורט', 'Thriller' => 'מותחן', 'War' => 'מלחמה', 'Western' => 'מערבון'
         ];
         $genres_he = [];
         foreach ($all_genres as $g) {
@@ -154,6 +135,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
         $poster_type_code = 'movie';
         $actors = '';
         $tvdb_id = null;
+
+        // שדות סדרה
+        $network = '';
+        $network_logo = '';
+        $seasons_count = 0;
+        $episodes_count = 0;
+
+        if (!empty($tmdb['tv_results'])) {
+            $tv = $tmdb['tv_results'][0];
+            $tv_id = $tv['id'] ?? null;
+            if ($tv_id) {
+                $tv_details = @json_decode(file_get_contents("https://api.themoviedb.org/3/tv/$tv_id?api_key=$tmdb_key&language=he"), true);
+                if (!empty($tv_details['networks'][0]['name'])) {
+                    $network = $tv_details['networks'][0]['name'];
+                    $network_logo = $tv_details['networks'][0]['logo_path'] ?? '';
+                    if ($network_logo) {
+                        $network_logo = 'https://image.tmdb.org/t/p/w92' . $network_logo;
+                    }
+                }
+                $seasons_count = $tv_details['number_of_seasons'] ?? 0;
+                $episodes_count = $tv_details['number_of_episodes'] ?? 0;
+            }
+        }
 
         if (!empty($tmdb['movie_results'])) {
             $movie = $tmdb['movie_results'][0];
@@ -228,57 +232,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_ids'])) {
         $imdb_link = "https://www.imdb.com/title/$imdb_id";
         $metacritic_link = '';
         $rt_link = '';
-        $has_subtitles = 0;
-        $is_dubbed = 0;
-        $youtube_trailer = '';
+        $pending = 0;
+        $collection_name = null;
+        $created_at = date('Y-m-d H:i:s');
 
-        // 30 שדות ב-prepare וב-bind_param!
-        $stmt = $conn->prepare("INSERT INTO posters 
-          (imdb_id, title_en, title_he, year, plot, plot_he, image_url, type_id, imdb_rating, genre, actors, runtime, directors, writers, producers, cinematographers, composers,
-          youtube_trailer, has_subtitles, is_dubbed, lang_code, tvdb_id, imdb_link, metacritic_score, rt_score, metacritic_link, rt_link, languages, countries, tmdb_collection_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        // שמירה (35 עמודות, 35 ערכים — imdb_id במקום הנכון, string!)
+        $stmt = $conn->prepare("INSERT INTO posters (
+            title_en, title_he, year, imdb_rating, imdb_link, network,
+            image_url, plot, plot_he, lang_code, tvdb_id, youtube_trailer, genre,
+            actors, metacritic_score, rt_score, metacritic_link, rt_link,
+            imdb_id, pending, collection_name, created_at, type_id, directors, writers, producers,
+            cinematographers, composers, runtime, languages, countries, tmdb_collection_id,
+            seasons_count, episodes_count, network_logo
+        ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )");
 
         $stmt->bind_param(
-          "ssssssssdssssssssiiisssssssssi",
-          $imdb_id, $title_en, $title_he, $year, $plot, $plot_he, $poster, $type_id,
-          $imdb_rating, $genres, $actors, $runtime, $directors, $writers, $producers, $cinematographers, $composers,
-          $youtube_trailer, $has_subtitles, $is_dubbed, $lang_code, $tvdb_id, $imdb_link, $metacritic_score, $rt_score, $metacritic_link, $rt_link,
-          $languages, $countries, $tmdb_collection_id
+            'ssssssssssssssssssisssssssssssssiis',
+            $title_en, $title_he, $year, $imdb_rating, $imdb_link, $network,
+            $poster, $plot, $plot_he, $lang_code, $tvdb_id, $youtube_trailer, $genres,
+            $actors, $metacritic_score, $rt_score, $metacritic_link, $rt_link,
+            $imdb_id, $pending, $collection_name, $created_at, $type_id, $directors, $writers, $producers,
+            $cinematographers, $composers, $runtime, $languages, $countries, $tmdb_collection_id,
+            $seasons_count, $episodes_count, $network_logo
         );
         $stmt->execute();
         $stmt->close();
 
-        if ($title_he && stripos($title_en, $title_he) === false) {
-            $title_en .= " (AKA $title_he)";
-        }
         $report[] = [
             'id' => $imdb_id,
             'status' => 'added',
             'title' => $title_en,
-            'tmdb_collection_id' => $tmdb_collection_id
+            'network' => $network,
+            'seasons_count' => $seasons_count,
+            'episodes_count' => $episodes_count
         ];
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>📥 הוספת פוסטרים מלאה</title>
+  <style>
+    body { font-family: 'Alef', Arial, sans-serif; background: #fafaff; margin: 0; padding: 0; }
+    h2 { color: #333; margin-top: 30px; }
+    form { margin: 30px 0 0 0; text-align: center; }
+    textarea[name=imdb_ids] {
+      width: 380px; min-height: 90px; border-radius: 8px; border: 1.5px solid #bbb;
+      font-size: 17px; padding: 12px; margin-bottom: 15px; background: #fff;
+      box-shadow: 0 2px 8px #0001;
+      direction: ltr; resize: vertical;
+      transition: border .2s;
+    }
+    textarea[name=imdb_ids]:focus { border-color: #028ad1; outline: none; }
+    button[type=submit] {
+      background: linear-gradient(90deg, #0a8fff 40%, #36e0ff 100%);
+      color: #fff; font-size: 20px; font-weight: bold; padding: 10px 38px;
+      border: none; border-radius: 10px; box-shadow: 0 2px 6px #0af3;
+      cursor: pointer; letter-spacing: 1px; margin-bottom: 20px; transition: background .2s;
+    }
+    button[type=submit]:hover { background: linear-gradient(90deg, #028ad1 0%, #0de0ff 100%); }
+    hr { margin: 25px 0; }
+    p { margin: 12px 0 20px 0; font-size: 16px; background: #fff; display: inline-block; padding: 10px 18px; border-radius: 7px; box-shadow: 0 1px 6px #0001; }
+  </style>
 </head>
 <body>
   <h2>📥 הוספת פוסטרים אוטומטית לפי IMDb</h2>
   <form method="post">
-    <textarea name="imdb_ids" rows="10" placeholder="הכנס IMDb ID או קישורים בשורות נפרדות" style="width:400px"></textarea><br>
+    <textarea name="imdb_ids" rows="10" placeholder="הכנס IMDb ID או קישורים בשורות נפרדות"></textarea><br>
     <button type="submit">🚀 הוסף</button>
   </form>
   <hr>
   <?php foreach ($report as $r): ?>
     <p>
-      <?= safe($r['id']) ?> — <?= safe($r['status']) ?><?= isset($r['title']) ? ' — ' . safe($r['title']) : '' ?>
-      <?php if (isset($r['tmdb_collection_id'])): ?>
-        <br>tmdb_collection_id: <?= var_export($r['tmdb_collection_id'], true) ?>
+      <?= safe($r['id']) ?> — <?= safe($r['status']) ?>
+      <?php if (isset($r['title'])): ?>
+        — <?= safe($r['title']) ?>
+      <?php endif; ?>
+      <?php if (isset($r['network']) && $r['network']): ?>
+        <br>רשת: <?= safe($r['network']) ?>
+      <?php endif; ?>
+      <?php if (isset($r['seasons_count']) && $r['seasons_count']): ?>
+        <br>עונות: <?= intval($r['seasons_count']) ?>
+      <?php endif; ?>
+      <?php if (isset($r['episodes_count']) && $r['episodes_count']): ?>
+        <br>פרקים: <?= intval($r['episodes_count']) ?>
       <?php endif; ?>
     </p>
   <?php endforeach; ?>

@@ -9,7 +9,7 @@ $conn->set_charset("utf8");
 $result = $conn->query("SELECT id, image_url, imdb_id FROM posters WHERE image_url LIKE 'http%'");
 
 echo "<h3>📥 סנכרון תמונות מהאינטרנט</h3>";
-echo "<ul>";
+echo "<center><ul>";
 
 while ($row = $result->fetch_assoc()) {
     $id    = $row['id'];
